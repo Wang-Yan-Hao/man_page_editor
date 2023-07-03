@@ -24,3 +24,7 @@ function popup3(e) {
    }
 }
 button.addEventListener('click', popup3);
+
+command = "man"
+chapter = "1"
+
