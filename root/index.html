@@ -6,13 +6,13 @@
    <title>FreeBSD Online Man Page Editor</title>
    <script>
       // Display confirmation message when closing the page
-      window.addEventListener('beforeunload', function(e) {
-         // Custom message to inform the user
-         var confirmationMessage = 'Your content may not be stored. Are you sure you want to leave this page?';
-         // Some browsers require the confirmation message to be set
-         e.returnValue = confirmationMessage;  
-         return confirmationMessage;
-      });
+      // window.addEventListener('beforeunload', function(e) {
+      //    // Custom message to inform the user
+      //    var confirmationMessage = 'Your content may not be stored. Are you sure you want to leave this page?';
+      //    // Some browsers require the confirmation message to be set
+      //    e.returnValue = confirmationMessage;  
+      //    return confirmationMessage;
+      // });
    </script>
    <link rel="stylesheet" href="styles/reset.css">
    <link rel="stylesheet" href="styles/index.css">
@@ -33,6 +33,9 @@
       <!-- <a title="Download patch" href="javascript:null" onclick="patch_download()">
          <img src="./img/download_2.png" >
       </a> -->
+      <a title="FreeBSD Bugzilla" href="javascript:null" onclick="window.open('https://bugs.freebsd.org/bugzilla/','_blank')"> 
+         <img src="./img/web_2.png">
+      </a>
       <a title="Help" href="pages/help.html" target="_blank"> 
          <img src="./img/help_2.png">
       </a>
