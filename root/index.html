@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>FreeBSD Online Man Page Editor</title>
+   <script>
+      // Display confirmation message when closing the page
+      window.addEventListener('beforeunload', function(e) {
+         // Custom message to inform the user
+         var confirmationMessage = 'Your content may not be stored. Are you sure you want to leave this page?';
+         // Some browsers require the confirmation message to be set
+         e.returnValue = confirmationMessage;  
+         return confirmationMessage;
+      });
+   </script>
+   <link rel="stylesheet" href="styles/reset.css">
+   <link rel="stylesheet" href="styles/index.css">
+</head>
+<body>
+   <div class="title-container">
+      <h1 class="title">FreeBSD Online Man Page Editor</h1>
+
+      <a title="Change file" class="change_file" href="javascript:null"> 
+         <img src="./img/exchange_2.png">
+      </a>
+      <a title="Generate Content" href="javascript:null"> 
+         <img src="./img/html_2.png">
+      </a>
+      <!-- <a title="Save Content" href="javascript:null" onclick="store_content()"> 
+         <img src="./img/save_2.ico">
+      </a> -->
+      <!-- <a title="Download patch" href="javascript:null" onclick="patch_download()">
+         <img src="./img/download_2.png" >
+      </a> -->
+      <a title="Help" href="pages/help.html" target="_blank"> 
+         <img src="./img/help_2.png">
+      </a>
+   </div>
+
+   <div class="file-title-container">
+      <h1 class="file-title"></h1>
+   </div>
+
+   <div class="editor-container">
+      <div class="left">
+         <div id="editor"></div>
+      </div>
+      <div class="right">
+         <iframe id="output"></iframe>
+      </div>
+   </div>
+
+   <div class="footer">
+      <p>Made with ♥ by the FreeBSD Community</p>
+   </div>
+   
+   <!-- include ace.js by CDN -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.11.2/ace.js" integrity="sha512-AhCq6G80Ge/e6Pl3QTNGI2Je+6ixVVDmmE4Nui8/dHRBKxMUvjJxn6CYEcMQdTSxHreC3USOxTDrvUPLtN5J7w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> 
+   <!-- include diff.js by CDN -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js" integrity="sha512-vco9RAxEuv4PQ+iTQyuKElwoUOcsVdp+WgU6Lgo82ASpDfF7vI66LlWz+CZc2lMdn52tjjLOuHvy8BQJFp8a1A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> 
+   <!-- our js file -->
+   <script src="scripts/index.js"></script>
+   <script src="scripts/patch_download.js"></script>
+</body>
+</html>
