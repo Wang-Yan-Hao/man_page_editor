@@ -4,6 +4,8 @@
    flex-direction: row;
    display: flex;
    align-items: center;
+   
+   
 }
 
 .title-container > a > img  {
@@ -13,6 +15,7 @@
 .title-container > a {
    margin-right: 25px;
 }
+
 
 h1.title {
    font-family: "Roboto", sans-serif;  
@@ -26,16 +29,57 @@ h1.title {
    margin-right: auto;
 }
 
-.change_file {
+.input1_txt {
    margin-left: auto;
 }
+
+.input1_txt, .selectMenu_txt {
+   font-family: "Roboto", sans-serif;  
+   color: rgb(244, 242, 242); 
+   font-weight: 600;
+   font-size: 16px;
+   display: inline;
+}
+#input1, #selectMenu {
+   margin-left: 5px;
+}
+
+.selectMenu_txt {
+   margin-left: 10px;
+}
+
+a.search {
+   margin-left: 4px;
+}
+
+.title-container > a {
+   margin-bottom: 3px;
+}
+
+#selectMenu, #input1 {
+   appearance: none;
+   -webkit-appearance: none;
+   -moz-appearance: none;
+   background-color: #f1f1f1;
+   padding: 2px 5px;
+   border: 1px solid #ccc;
+   border-radius: 4px;
+   font-size: 14px;
+   color: #333;
+   cursor: pointer;
+ }
+
+ #selectMenu > option, #input1 {
+   background-color: #ffffff;
+   font-family: "Roboto", sans-serif;  
+
+ }
 
 .file-title-container {
    background-color: #f7f6f6;
    padding-left: 14px;
    padding-top: 13px;
    padding-bottom: 13px;
-
 }
 
 h1.file-title {

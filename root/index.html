@@ -20,9 +20,27 @@
 <body>
    <div class="title-container">
       <h1 class="title">FreeBSD Online Man Page Editor</h1>
+      
+      <label class="input1_txt">Content:</label>
+      <input type="text" id="input1"><br>
 
-      <a title="Change file" class="change_file" href="javascript:null"> 
-         <img src="./img/exchange_2.png">
+      <label class="selectMenu_txt">Section:</label>
+      <select id="selectMenu">
+        <option value="option0">All Sections</option>
+        <option value="option1">1 - General Commands</option>
+        <option value="option2">2 - System Calls</option>
+        <option value="option3">3 - Subroutines</option>
+        <option value="option4">4 - Special Files</option>
+        <option value="option5">5 - File Formats</option>
+        <option value="option6">6 - Games</option>
+        <option value="option7">7 - Macros and Conventions</option>
+        <option value="option8">8 - Maintenance Commands</option>
+        <option value="option9">9 - Kernel Interface</option>
+        <option value="option10">n - New Commands</option>
+      </select>
+
+      <a title="Search" onclick="search_content()" class="search" href="javascript:null"> 
+         <img src="./img/search_2.png">
       </a>
       <a title="Generate Content" href="javascript:null"> 
          <img src="./img/html_2.png">
