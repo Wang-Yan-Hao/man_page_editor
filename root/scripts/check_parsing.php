@@ -11,8 +11,8 @@ fwrite($file, $message);
 fclose($file);
 
 // Execute the man command with the filename as the argument
-// Translate the message to html
-$command = '/usr/bin/mandoc -T html ' . escapeshellarg($filename);
+// Use mandoc(1)'s linter to check for parsing errors:
+$command = '/usr/bin/mandoc -T lint ' . escapeshellarg($filename);
 $output = shell_exec($command);
 
 // Remove the temporary file
