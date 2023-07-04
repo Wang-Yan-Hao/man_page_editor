@@ -94,3 +94,32 @@ function search_content() {
   window.alert("Search no result")
   // Output warning message
 }
+
+function generate_content() {
+  let editor_content = editor.getValue();  // Editor content
+  window.editor_content = editor_content; // Use global window object to store current content
+  
+  // Send http get with the content to back-end
+  var url = "scripts/convert.php";
+  fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: "message=" + encodeURIComponent(editor_content)
+  })
+    .then(function(response) {
+      if (response.ok) {
+        return response.text();
+      }
+      throw new Error("Network response was not ok.");
+    })
+    .then(function(responseText) {
+      console.log(responseText);
+      // Process the response here
+    })
+    .catch(function(error) {
+      console.log("Error:", error.message);
+    });
+  // output_session.contentDocument.body.innerHTML = html_content; // HTML render to output window
+}
