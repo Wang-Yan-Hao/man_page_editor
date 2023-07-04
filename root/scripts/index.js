@@ -96,6 +96,7 @@ function search_content() {
 }
 
 function generate_content() {
+  console.log("nice")
   let editor_content = editor.getValue();  // Editor content
   window.editor_content = editor_content; // Use global window object to store current content
   
@@ -115,11 +116,10 @@ function generate_content() {
       throw new Error("Network response was not ok.");
     })
     .then(function(responseText) {
-      console.log(responseText);
-      // Process the response here
+      console.log("nice")
+      output_session.contentDocument.body.innerHTML = responseText; // HTML render to output window
     })
     .catch(function(error) {
       console.log("Error:", error.message);
     });
-  // output_session.contentDocument.body.innerHTML = html_content; // HTML render to output window
 }
