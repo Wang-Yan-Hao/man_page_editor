@@ -97,7 +97,7 @@ function search_content() {
 
 // Ask backend to convert the html content
 function generate_content() {
-  let editor_content = editor.getValue();  // Editor content
+  let editor_content = editor.getValue(); // Editor content
   window.editor_content = editor_content; // Use global window object to store current content
   // Send http.post with the content to back-end
   var url = "scripts/convert.php";
@@ -116,6 +116,60 @@ function generate_content() {
     })
     .then(function(responseText) {
       output_session.contentDocument.body.innerHTML = responseText; // HTML render to output window
+    })
+    .catch(function(error) {
+      console.log("Error:", error.message);
+    });
+}
+
+// Ask backend to check parsing error
+function check_parsing() {
+  let editor_content = editor.getValue(); // Editor content
+  window.editor_content = editor_content; // Use global window object to store current content
+  // Send http.post with the content to back-end
+  var url = "scripts/check_parsing.php";
+  fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: "message=" + encodeURIComponent(editor_content)
+  })
+    .then(function(response) {
+      if (response.ok) {
+        return response.text();
+      }
+      throw new Error("Network response was not ok.");
+    })
+    .then(function(responseText) {
+      console.log(responseText)
+    })
+    .catch(function(error) {
+      console.log("Error:", error.message);
+    });
+}
+
+// Ask back-end use textproc/igor to proofread the manual page:
+function igor() {
+  let editor_content = editor.getValue();  // Editor content
+  window.editor_content = editor_content; // Use global window object to store current content
+  // Send http.post with the content to back-end
+  var url = "scripts/igor.php";
+  fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: "message=" + encodeURIComponent(editor_content)
+  })
+    .then(function(response) {
+      if (response.ok) {
+        return response.text();
+      }
+      throw new Error("Network response was not ok.");
+    })
+    .then(function(responseText) {
+      console.log(responseText)
     })
     .catch(function(error) {
       console.log("Error:", error.message);
