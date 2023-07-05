@@ -47,7 +47,7 @@ function searchKey(jsonObj, key) {
 function github_get(url){
   var request = new XMLHttpRequest();
   request.open("GET", url, false);
-  request.send(null);
+  request.send(null)
   if (request.status === 200) {
     // Success - handle the response
     response_text = request.responseText
@@ -86,7 +86,6 @@ function search_content() {
     const result = searchKey(json_map, search_key);
     if (result !== null) {
       github_raw_url = github_raw_url + result.substr(9, result.length);
-      console.log(github_raw_url)
       github_get(github_raw_url)   
       return;
     }
@@ -142,7 +141,10 @@ function check_parsing() {
       throw new Error("Network response was not ok.");
     })
     .then(function(responseText) {
+      var output_session = document.querySelector("#parsing_error_content"); // output session set to id="output" tag in html
+      output_session.innerHTML = responseText;
       console.log(responseText)
+
     })
     .catch(function(error) {
       console.log("Error:", error.message);
@@ -169,6 +171,7 @@ function igor() {
       throw new Error("Network response was not ok.");
     })
     .then(function(responseText) {
+      console.log("nice")
       console.log(responseText)
     })
     .catch(function(error) {
