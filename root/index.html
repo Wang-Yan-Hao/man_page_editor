@@ -16,6 +16,53 @@
    </script>
    <link rel="stylesheet" href="styles/reset.css">
    <link rel="stylesheet" href="styles/index.css">
+
+   <style>
+      .file-title-container {
+         flex-direction: row;
+         display: flex;
+         align-items: center;
+         height: 15px;
+      }
+      #button {
+         /* display: inline-block;
+         padding: 10px;
+         background-color: #ccc;
+         cursor: pointer; */
+         margin-left: auto;
+      }
+      
+      #parsing_error_window {
+         display: none;
+         position: absolute; /* Position the window relative to the viewport */
+         width: 200px;
+         height: 150px;
+         overflow-y: auto;
+         background-color: #f9f9f9;
+         border: 1px solid #aaa;
+         padding: 15px;
+         top: 55px; /* Adjust the desired top position */
+         right: 120px; /* Adjust the desired left position */
+         font-size: 13px;
+      }
+
+      #closeButton {
+         position: absolute;
+         top: 0px;
+         right: 0px;
+         cursor: pointer;
+         height: 18px;
+      }
+
+      .file-title-container > a > img {
+         width: 25px;
+      }
+
+      .file-title-container > a {
+         margin-right: 25px;
+      }
+   </style>
+  
 </head>
 <body>
    <div class="title-container">
@@ -45,12 +92,6 @@
       <a title="Generate Content" href="javascript:null" onclick="generate_content()"> 
          <img src="./img/html_2.png">
       </a>
-      <a title="Check parsing" href="javascript:null" onclick="check_parsing()"> 
-         <img src="./img/check_2.ico">
-      </a>
-      <a title="Igor" href="javascript:null" onclick="igor()"> 
-         <img src="./img/check_2.ico">
-      </a>
       <a title="Save Content" href="javascript:null" onclick="store_content()"> 
          <img src="./img/save_2.ico">
       </a>
@@ -66,8 +107,34 @@
    </div>
 
    <div class="file-title-container">
-      <h1 class="file-title"></h1>
+      <a id="button" title="Check parsing" href="javascript:null" onclick="check_parsing()"> 
+         <img src="./img/check.png">
+      </a>
+      <a id="button2" title="Igor" href="javascript:null" onclick="igor()"> 
+         <img src="./img/check.png">
+      </a>
+      <div id="parsing_error_window">
+         <button id="closeButton">X</button>
+         <div id="parsing_error_content">
+            
+         </div>
+      </div>
+
    </div>
+
+   <script>
+      const button = document.getElementById('button');
+      const parsing_error_window = document.getElementById('parsing_error_window');
+      const closeButton = document.getElementById('closeButton');
+
+      button.addEventListener('click', function() {
+         parsing_error_window.style.display = 'block';
+      });
+      closeButton.addEventListener('click', function() {
+         parsing_error_window.style.display = 'none';
+      });
+   </script>
+
 
    <div class="editor-container">
       <div class="left">
