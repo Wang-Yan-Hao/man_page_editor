@@ -106,18 +106,6 @@
       </a>
    </div>
 
-   <script>
-      const button = document.getElementById('button');
-      const parsing_error_window = document.getElementById('parsing_error_window');
-      const closeButton = document.getElementById('closeButton');
-
-      button.addEventListener('click', function() {
-         parsing_error_window.style.display = 'block';
-      });
-      closeButton.addEventListener('click', function() {
-         parsing_error_window.style.display = 'none';
-      });
-   </script>
 
 
    <div class="editor-container">
@@ -137,7 +125,7 @@
    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.11.2/ace.js" integrity="sha512-AhCq6G80Ge/e6Pl3QTNGI2Je+6ixVVDmmE4Nui8/dHRBKxMUvjJxn6CYEcMQdTSxHreC3USOxTDrvUPLtN5J7w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> 
    <!-- include diff.js by CDN -->
    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js" integrity="sha512-vco9RAxEuv4PQ+iTQyuKElwoUOcsVdp+WgU6Lgo82ASpDfF7vI66LlWz+CZc2lMdn52tjjLOuHvy8BQJFp8a1A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> 
-   <!-- our js file -->
+   <script src="scripts/jroff.js"></script>
    <script src="scripts/index.js"></script>
    <script src="scripts/patch_download.js"></script>
 </body>

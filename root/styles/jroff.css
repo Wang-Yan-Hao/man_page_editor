@@ -1,0 +1,17 @@
+/* Dt macro css */
+.Dt-text-container {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+.Dt-left-text {
+    text-align: left;
+}
+
+.Dt-right-text {
+    text-align: right;
+}
+
+.Dt-mid-text {
+    text-align: center;
+}

@@ -1,0 +1,23 @@
+.\"- Dd macro
+.Dd $Mdocdate: July 2 2018$
+.Dt LS 1
+.Os BSD 4.3
+.Sh Name
+.Nm ls
+.Nd list directory contents
+.\"- Sections and cross references
+
+.Fd #ifdef
+.Ft void 123
+
+.Fn "int funcname" "int	arg0" "int arg1"
+.Fa "argtype argname"
+
+.Fo int
+.Fa "argtype argname"
+.Fd #ifdef
+.Fa "argtype argname2"
+.Fc
+
+
+

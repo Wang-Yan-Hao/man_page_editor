@@ -3,6 +3,16 @@ var editor = ace.edit("editor"); // Set editor to id="editor" tag in html
 editor.setOption("wrap", "free"); // Long lines will automatically wrap to the next line when they reach the edge of the editor, without inserting line breaks or truncating the content.
 editor.session.setMode("ace/mode/text"); // Set editor syntax to asciidoc
 
+var rawFile = new XMLHttpRequest();
+rawFile.onreadystatechange = function() {
+  if (rawFile.readyState === 4) {
+    var allText = rawFile.responseText;
+    editor.setValue(allText)
+  }
+}
+rawFile.open("GET", "scripts/temp.txt", true);
+rawFile.send();
+
 var output_session = document.querySelector("#output"); // output session set to id="output" tag in html
 let configFile = "";
 // Get the config data
@@ -94,8 +104,15 @@ function search_content() {
   window.alert("Search no result")
 }
 
+
+
 // Generated content
 function generate_content() {
-
+  let editor_content = editor.getValue();  // Editor content
+  console.log('hello')
+  var generator = new Jroff.HTMLGenerator();
+  var result = generator.generate(editor_content, 'doc');
+  output_session.contentDocument.body.innerHTML = '<link rel="stylesheet" href="styles/jroff.css">' + 
+  result
 }
 
