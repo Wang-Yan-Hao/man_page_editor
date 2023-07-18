@@ -1078,20 +1078,49 @@ macros.doc = {
     return '<p>';
   },
   Bd: function (args) {
-    var indent;
+    var indent = this.buffer.style.indent + '%'; // Default indent, may change by -offset argument
 
     args = this.parseArguments(args);
-    
-    
+    var type = args[0];
 
-    indent = (
-      this.buffer.style.indent / 4) * (this.buffer.lists.length - 1);
+    var font = ''
+    if (type == '-literal' || type == '-unfilled'){
+      this.buffer.Bd_unfill = true;
+      font = 'font-family:monospace;'
+    }
+    else if (type == '-centered') { // Not recommend to use
 
-    return(
-      '<div style="list-style:none;padding:0 0 0 ' + indent + '%;">'
-    );  },
+    }
+    else if (type == 'ragged' || type == 'filled'){
+
+    }
+
+
+    if (args[1] == '-offset' && args[3] == '-compact') { // -offset width -compact
+      var width = args[2]
+      if(width) {
+
+      }
+    }
+    else if (args[1] == '-offset' && args[2] == '-compact') { // -offset -compact
+    }
+    else if (args[1] == '-offset') { // -offset width or -offset
+      var width = args[2]
+      if(width) {
+
+      }
+    }
+    else if (args[1] == '-compact') {// compact
+     
+    }
+
+    return '<div style="' + font + 'padding:0 0 0 ' + indent + ';">';
+
+  },
   Ed: function (text) {
-    return this.generateTag('span', text);
+    this.buffer.Bd_unfill = false;
+
+    return '</div>';
   },
   D1: function (text) {
     var indent = this.buffer.style.indent;
@@ -1917,7 +1946,7 @@ macros.doc = {
    *
    */
   Dq: function (args) {
-    return this.generateTag('span', '``' + args + '\'\'');
+    return this.generateTag('span', '"' + args + '"');
   },
   /**
    * Prints an opening double quote
@@ -1928,7 +1957,7 @@ macros.doc = {
    *
    */
   Do: function () {
-    return this.generateTag('span', '``');
+    return '<span class="Do">"';
   },
   /**
    * Prints a closing double quote
@@ -1939,7 +1968,7 @@ macros.doc = {
    *
    */
   Dc: function () {
-    return this.generateTag('span', '\'\'');
+    return '"</span>';
   },
   /**
    * Encloses a text in straight double quotes
@@ -1962,7 +1991,7 @@ macros.doc = {
    *
    */
   Qo: function () {
-    return this.generateTag('span', '"');
+    return '<span class="Qo">"';
   },
 
   /**
@@ -1974,7 +2003,7 @@ macros.doc = {
    *
    */
   Qc: function () {
-    return this.generateTag('span', '"');
+    return '"</span>';
   },
   /**
    * Encloses text in straight single quotes
@@ -1996,7 +2025,7 @@ macros.doc = {
    *
    */
   So: function () {
-    return this.generateTag('span', '`');
+    return '<span class="So">\'';
   },
   /**
    * Prints a straight single quote
@@ -2007,7 +2036,7 @@ macros.doc = {
    *
    */
   Sc: function () {
-    return this.generateTag('span', '\'');
+    return '\'</span>';
   },
   /**
    * Encloses the given text in parenthesis
@@ -2020,6 +2049,7 @@ macros.doc = {
   Pq: function (args) {
     return this.generateTag('span', '(' + args + ')');
   },
+
   /**
    * Prints an open parenthesis
    *
@@ -2029,8 +2059,9 @@ macros.doc = {
    *
    */
   Po: function () {
-    return this.generateTag('span', '(');
+    return '<span class="Po">(';
   },
+
   /**
    * Prints a closing parenthesis
    *
@@ -2040,7 +2071,7 @@ macros.doc = {
    *
    */
   Pc: function () {
-    return this.generateTag('span', ')');
+    return ')</span>';
   },
 
   /**
@@ -2066,7 +2097,7 @@ macros.doc = {
    *
    */
   Bo: function () {
-    return this.generateTag('span', '[');
+    return '<span class="Bo">[';
   },
 
   /**
@@ -2078,7 +2109,7 @@ macros.doc = {
    *
    */
   Bc: function () {
-    return this.generateTag('span', ']');
+    return ']</span>';
   },
   /**
    * Encloses in braces the given text
@@ -2103,7 +2134,7 @@ macros.doc = {
    *
    */
   Bro: function () {
-    return this.generateTag('span', '{');
+    return '<span class="Bro">{';
   },
 
   /**
@@ -2115,7 +2146,7 @@ macros.doc = {
    *
    */
   Brc: function () {
-    return this.generateTag('span', '}');
+    return '}</span>';
   },
 
   /**
@@ -2141,7 +2172,7 @@ macros.doc = {
    *
    */
   Ao: function () {
-    return this.generateTag('span', '&lt;');
+    return '<span class="Ao">&lt';
   },
 
   /**
@@ -2153,7 +2184,7 @@ macros.doc = {
    *
    */
   Ac: function () {
-    return this.generateTag('span', '&gt;');
+    return '&gt</span>';
   },
 
   /**
@@ -2164,8 +2195,9 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Eo: function () {
-    return this.generateTag('span', 'XX');
+  Eo: function (argus) {
+    argus = this.parseArguments(argus);
+    return this.generateTag('span', argus.shift() + argus.join(' '));
   },
 
   /**
@@ -2176,8 +2208,8 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Ec: function () {
-    return this.generateTag('span', 'XX');
+  Ec: function (argus) {
+    return this.generateTag('span', argus);
   },
 
   Ex: function (args) { // Ex -std [utility ...]
@@ -2211,9 +2243,35 @@ macros.doc = {
     return this.generateTag('span', pre + content + post + post_2);
   },
 
-  'Rv -std': function (text) {
-    return this.generateTag('span', text);
-  },
+  Rv: function (args) { // Rv	-std [function ...]
+    args = this.parseArguments(args);
+    // args[0] may be '-std'
+    if(args[0] == '-std')
+      args.shift();
+
+    var content = this.generateTag('strong>strong', this.buffer.name); // Default to .Nm name
+    var post = 'function ';
+
+    if (args.length == 1){
+      content = this.generateTag('strong>strong', ('<br>' + args[0]))  + '(); ';
+    }
+    else if(args.length == 2) {
+      content = (this.generateTag('strong>strong',('<br>' + args[0])) + '(); and<br>' + this.generateTag('strong>strong', args[1]) + '(); '); 
+      post = 'functions '
+    }
+    else if(args.length >= 3) {
+      content = ''
+      for(var i = 0;i < args.length-1;i++) {
+        content += this.generateTag('strong>strong', ('<br>' + args[i])) + '();, '
+      }
+      content += ('and<br>' + this.generateTag('strong>strong', args[args.length-1]) ) + '(); '
+      post = 'functions '
+    }
+
+    var pre = 'The';
+    var post_2 = 'return the value 0 if successful; otherwise the value -1 is returned and the global variable errno is set to indicate the error.'
+
+    return this.generateTag('span', pre + content + post + post_2);  },
 
   /**
    * Replaces standard abbreviations with their formal names.
@@ -2254,13 +2312,36 @@ macros.doc = {
    *
    */
   At: function (version) {
-    var base = ' AT&amp;T UNIX',
-      preamble;
+    var base = ' AT&amp;T UNIX';
+    version = this.parseArguments(version);
+    const regex_1 = /v[1-7]/;
+    const regex_2 = /V.[1-4]/;
 
-    version = version.match(patterns.number);
-    preamble = version ? 'Version ' + version[0] : '';
-
-    return this.generateTag('span', preamble + base);
+    if(version.length == 1 && version[0] != ''){
+      var key = version[0];
+      if (regex_1.test(key)) {
+        base = 'Version ' + key[1] + ' ' + base; 
+      }
+      else if (key == '32v') {
+        base = 'Version 7 AT&amp;T UNIX/32V';
+      }
+      else if (key == 'III') {
+        base = 'AT&amp;T System III UNIX';
+      }
+      else if (key == 'V') {
+        base = 'AT&amp;T System V UNIX';
+      }
+      else if (regex_2.test(key)) {
+        base = 'AT&amp;T System V Release ' + key[2] + ' UNIX';
+      }
+      else {
+        base = base + ' ' + key;
+      }     
+      return this.generateTag('span', base); 
+    }
+    else {
+      return this.generateTag('span', base + ' ' + version.join(' '));
+    }
   },
 
   /**
@@ -2275,23 +2356,16 @@ macros.doc = {
    *
    */
   Bx: function (version) {
-    var base,
-      out;
+    var base = 'BSD';
+    version = this.parseArguments(version);
 
-    base = 'BSD';
-    version = version;
+    base = (version.shift() || '') + base + (version[0] ? ('-' + version.shift()) : '') + ' ' + version.join(' ');
 
-    if(version === '-devel') {
-      out = base + '(currently under development)';
-    } else {
-      out = version + base;
-    }
-
-    return this.generateTag('span', out);
+    return this.generateTag('span', base);
   },
 
-  BSx: function (text) {
-    return this.generateTag('span', text);
+  Bsx: function (text) {
+    return this.generateTag('span', 'BSD/OS ' + text);
   },
 
   /**
@@ -2342,7 +2416,6 @@ macros.doc = {
     return this.generateTag('span', 'DragonFly ' + version);
   },
   "\\&": function (text) {
-    // console.log('special text' + text);
     return text;
   },
   "\\e": function (text) {
@@ -2417,7 +2490,6 @@ macros.doc = {
   //   return this.generateTag('span', text);
   // },
 };
-
 var HTMLGenerator = function () {};
 
 HTMLGenerator.prototype.generate = function (source, lib) { // lib parameter is not use now, this is use when you have different macros, but in this we only have one macro
@@ -2454,13 +2526,18 @@ HTMLGenerator.prototype.generate = function (source, lib) { // lib parameter is 
     fontModes: [],
     sectionTags: [],
     activeFontModes: [], // Use fo Bf Ef macro
-    InFoMacro: false // Use for Fo Fc macro
+    InFoMacro: false, // Use for Fo Fc macro
+    Bd_unfill: false, // Use for Bd macro
   };
 
-  const ast_recurese = this.recurse(ast);
-  const day_tag = '</section><br><div style=" display: flex; justify-content: space-between;">' + 
+  var ast_recurese = this.recurse(ast);
+
+  // Post process
+  // 1. Add footer
+  var day_tag = '</section><br><div style=" display: flex; justify-content: space-between;">' + 
   '<span style="text-align: left;">' + this.buffer.date + 
   '</span><span style="text-align: right;">' + this.buffer.os + '</span></div>';
+  // 2. Remove the space of Do, Dc, Qo, Qc, So, Sc, Po, Pc
   return ast_recurese + day_tag;
 };
 
@@ -2503,7 +2580,18 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node) { // result is
     console.log('Macro:', node.value, 'Args:', args);
     result += func.call(this, args, node) || '';
   } else {
-    result += this.cleanQuotes(node.value); // If not macro, clean the " character
+    if (this.buffer.Bd_unfill == true) {
+      if(node.value == ' ') {
+        result += '<br>'
+      }
+      else {
+        result += '<span style="white-space: pre;">' + node.value + '</sapn>';
+      }
+      console.log('Bd_uunfill:', node.value);
+    }
+    else {
+      result += this.cleanQuotes(node.value); // If not macro, clean the " character
+    }
   }
   console.log('Result: ',result)
   return result;
