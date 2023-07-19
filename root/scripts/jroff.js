@@ -202,7 +202,6 @@ Token.isEmptyLine = function (str) {
  *
  */
 Token.isInlineMacro = function (str) {
-  //console.log(str)
   return callableMacros.indexOf(str) !== -1; // && macroLib === 'doc';
 };
 
@@ -918,10 +917,10 @@ macros.doc = {
    */
   Dt: function (args) {
     var sideText,
-    midText,
-    title,
-    section,
-    volume;
+        midText,
+        title,
+        section,
+        volume;
     
     /* Parse the arguments string */
     args = this.parseArguments(args); //.Dt FOO	9 i386
@@ -947,15 +946,11 @@ macros.doc = {
         midText = 'FreeBSD ' + docSections[this.buffer.section];
       }
     }
-    
-    return(
-      '<p class="Dt-text-container"><span class="t-left-text">' + 
-      sideText + '</span>' +
-      '<span class="Dt-mid-text">' + midText + '</span>' +
-      '<span class="Dt-right-text">' + sideText + 
-      '</span></p><section>'
-    );
+    this.buffer.sideText = sideText;
+    this.buffer.midText = midText;
+    return '';
   },
+
   /**
    * Store a value for the operating system in the buffer,
    * this value is used in the bottom left corner of the
@@ -971,6 +966,31 @@ macros.doc = {
   Os: function (os) {
     this.buffer.os = os || 'FreeBSD 14.0-CURRENT'; // Default use 14.0 current, but mandoc actually use -Ios argument or `uname`  
   },
+
+  /**
+   * The `.Nm' macro is used for the document title or subject name.
+   * It has the peculiarity of remembering the first argument it
+   * was called with, which should always be the subject name of
+   * the page.  When called without arguments, `.Nm' regurgitates
+   * this initial name for the sole purpose of making less work
+   * for the author.
+   *
+   * @param {string} args
+   *
+   * @returns {string}
+   *
+   * @since 0.0.1
+   *
+   */
+  Nm: function (args) {
+    var result;
+  
+    this.buffer.name = this.buffer.name || args;
+    result = args || this.buffer.name;
+  
+    return '<code class="Nm">' + result + '</code>';
+  },
+
   /**
    * `.Nd' first prints `--', then all its arguments.
    *
@@ -982,8 +1002,9 @@ macros.doc = {
    *
    */
   Nd: function (args) {
-    return this.generateTag('span', '-- ' + args);
+    return ' — ' + '<span class="Nd">' + args + '</span>';
   },
+
   /**
    * Defines a section header and a wrapper for the content that
    * comes next ( section tag ) indented with the default indent.
@@ -998,13 +1019,17 @@ macros.doc = {
    *
    */
   Sh: function (args) {
-    var openingTag = '<section style="margin-left:' +
-      this.buffer.style.indent + '%;">';
-
     this.buffer.section = args;
-
-    return '</section>' + '<br>' + '<h2 id="' + args + '">' + '<a href="#' + args + '">' +  args + '</a></h2>' + openingTag;
+    // this.buffer.sectionTags.push('section');
+    args = this.parseArguments(args);
+    var result = '</p></section><section class="Sh">' + '<h1 class="Sh" id="'
+               + args.join('_') + '">'
+               + '<a class="permalink" href="#' + args.join('_')
+               + '">' + args.join(' ')
+               + '</a></h1><p class="Pp">' 
+    return result;
   },
+
   /**
    * Represent a subsection inside a section, creates a subtitle tag
    * with the contents of the `arg` variable
@@ -1017,16 +1042,19 @@ macros.doc = {
    *
    */
   Ss: function (args) {
-    var openingTag = '<section style="margin-left:' +
-      this.buffer.style.indent + '%;">';
-
-    this.buffer.subSection = args;
-
-    return '</section>' + '<br>' + '<h2 id="' + args + '">' + args + '</h2>' + openingTag;
+    args = this.parseArguments(args);
+    var result = '</p></section><section class="Ss">' + '<h2 class="Ss" id="'
+               + args.join('_') + '">'
+               + '<a class="permalink" href="#' + args.join('_')
+               + '">' + args.join(' ')
+               + '</a></h2><p class="Pp">' 
+    return result;
   },
+
   Sx: function (text) {
-    return '<a href="#' + text + '">' + text + '</a>';
+    return '<a class="Sx" href="#' + text + '">' + text + '</a>';
   },
+
   /**
    * The `.Xr' macro expects the first argument to be a manual page
    * name. The optional second argument, if a string
@@ -1054,11 +1082,18 @@ macros.doc = {
     number = args[0] ? '(' + args.shift() + ')' : '';
     text = args.join(' ') || '';
 
-    return this.generateTag('span', name + number + text);
+    return '<a class="Xr">' + name + ' ' + number + '</a>' + text;
   },
+
   Tg: function (args) {
+    args = this.parseArguments(args)
+    const key = args[0]; // Only care about first parameter
+    if (key) {
+      return '<mark id="' + key + '"></mark>';
+    }
     return '';
   },
+
   /**
    * The `.Pp' paragraph command may be used to specify a line space
    * where necessary.
@@ -1073,63 +1108,88 @@ macros.doc = {
    *
    */
   Pp: function () {
-    this.buffer.openTags.push('p');
-
-    return '<p>';
+    return '</p><p class="Pp">';
   },
-  Bd: function (args) {
-    var indent = this.buffer.style.indent + '%'; // Default indent, may change by -offset argument
 
+  Bd: function (args) {
+    var class_result = []
     args = this.parseArguments(args);
     var type = args[0];
 
-    var font = ''
-    if (type == '-literal' || type == '-unfilled'){
+    var Bd_map = {
+      '-centered': 'Bd Pp',
+      '-filled': 'Bd Pp', // Special case
+      '-literal': 'Bd Pp Li',
+      '-ragged': 'Bd Pp',
+      '-unfilled': 'Bd Pp', // Special case
+      'indent': 'Bd-indent',
+      'indent-two': 'Bd-indent',
+      'left': '',
+      'right': 'Bd-indent',
+      'center': 'Bd-indent',
+      'compact': ''
+    }
+    
+    // type argument
+    if (type == '-centered' || type == '-filled' || type == '-ragged'){
+      class_result.push(Bd_map[type]);
+    }
+    else if (type == '-unfilled' || type == '-literal') { // Special case
+      class_result.push(Bd_map[type]);
       this.buffer.Bd_unfill = true;
-      font = 'font-family:monospace;'
     }
-    else if (type == '-centered') { // Not recommend to use
-
-    }
-    else if (type == 'ragged' || type == 'filled'){
-
+    else { // type not specified, bd is not useful here
+      return;
     }
 
-
+    // -offset and -compact argument
     if (args[1] == '-offset' && args[3] == '-compact') { // -offset width -compact
-      var width = args[2]
-      if(width) {
-
+      var width = args[2] || ''
+      if (width == 'indent' || width == 'indent-two' || width == 'left' || width == 'right' || width == 'center') {
+        class_result.push(Bd_map[width]);
+      }
+      else if (width != '') {
+        class_result.push('Bd-indent'); // Any string is Bd-indent
       }
     }
     else if (args[1] == '-offset' && args[2] == '-compact') { // -offset -compact
     }
     else if (args[1] == '-offset') { // -offset width or -offset
-      var width = args[2]
-      if(width) {
-
+      var width = args[2] || ''
+      if (width == 'indent' || width == 'indent-two' || width == 'left' || width == 'right' || width == 'center') {
+        class_result.push(Bd_map[width]);
+      }
+      else if (width != '') {
+        class_result.push('Bd-indent'); // Any string is Bd-indent
       }
     }
-    else if (args[1] == '-compact') {// compact
-     
+    else if (args[1] == '-compact') { // compact
     }
 
-    return '<div style="' + font + 'padding:0 0 0 ' + indent + ';">';
-
+    if (this.buffer.Bd_unfill) { // Special case
+      return '</p><div class="' + class_result.join(' ') + '">' + '<pre>';
+    }
+    else {
+      return '</p><div class="' + class_result.join(' ') + '">';
+    }
   },
-  Ed: function (text) {
-    this.buffer.Bd_unfill = false;
 
-    return '</div>';
+  Ed: function () {
+    if (this.buffer.Bd_unfill) {
+      this.buffer.Bd_unfill = false;
+      return '<pre><p class="Pp">';
+    }
+    return '</div><p class="Pp">';
   },
+
   D1: function (text) {
-    var indent = this.buffer.style.indent;
-    return '<br><span  style="padding: 0 0 0 ' + indent + '%;">' + text + '</span>';
+    return '<div class="Bd Bd-indent">' + text + '</div>'
   },
+
   Dl: function (text) {
-    var indent = this.buffer.style.indent;
-    return '<br><span  style="padding: 0 0 0 ' + indent + '%; font-family: monospace">' + text + '</span>';
+    return '<div class="Bd Bd-indent"><code class="Li">' + text + '</code></div>'
   },
+  
   /**
    * Quotes the argument literally
    * @arguments {string} args
@@ -1139,9 +1199,10 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Ql: function (args) {
-    return '<span style="font-family: monospace;">' + '`' + args + '\'' + '</span>';
+  Ql: function (text) {
+    return '`' + '<code class="Li">' + text + '</code>' + '\'';
   },
+
   /**
    * Initiates several types of lists, they may be
    * nested within themselves and within displays.
@@ -1164,22 +1225,74 @@ macros.doc = {
    *
    */
   Bl: function (args) { //  Bl	-type [-width val] [-offset val] [-compact] [col ...]
-    var indent;
-
+    var class_result = []
     args = this.parseArguments(args);
+    var type = args[0];
 
-    this.buffer.lists.unshift({
-      flags: args,
-      prevTag: '',
-      isOpen: false
-    });
+    var Bl_map = { // tag and class
+      '-bullet': 'ul Bl-bullet',
+      '-column': 'table Bl-column', // Special
+      '-dash': 'ul Bl-dash',
+      '-diag': 'dl Bl-diag', // Special
+      '-enum': 'ol Bl-enum',
+      '-hang': 'dl Bl-hang',
+      '-hyphen': 'ul Bl-dash',
+      '-inset': 'dl Bl-inset', // Special
+      '-item': 'ul Bl-item',
+      '-ohang': 'dl Bl-ohang', // Special
+      '-tag': 'dl Bl-tag', // Special
 
-    indent = (
-      this.buffer.style.indent / 4) * (this.buffer.lists.length - 1);
+      '-compact': 'Bl-compact',
 
-    return(
-      '<ul style="list-style:none;padding:0 0 0 ' + indent + '%;">'
-    );
+      'indent': 'div Bd-indent', // div tag must in the outer of Bl macro tag
+      'indent-two': 'div Bd-indent',
+      'left': '',
+      'right': 'div Bd-indent',
+      'center': 'div Bd-indent',
+    }
+    
+    // // type argument
+    // if (type == '-centered' || type == '-filled' || type == '-ragged'){
+    //   class_result.push(Bd_map[type]);
+    // }
+    // else if (type == '-unfilled' || type == '-literal') { // Special case
+    //   class_result.push(Bd_map[type]);
+    //   this.buffer.Bd_unfill = true;
+    // }
+    // else { // type not specified, Bl is not useful here
+    //   return;
+    // }
+
+    // // -offset and -compact argument
+    // if (args[1] == '-offset' && args[3] == '-compact') { // -offset width -compact
+    //   var width = args[2] || ''
+    //   if (width == 'indent' || width == 'indent-two' || width == 'left' || width == 'right' || width == 'center') {
+    //     class_result.push(Bd_map[width]);
+    //   }
+    //   else if (width != '') {
+    //     class_result.push('Bd-indent'); // Any string is Bd-indent
+    //   }
+    // }
+    // else if (args[1] == '-offset' && args[2] == '-compact') { // -offset -compact
+    // }
+    // else if (args[1] == '-offset') { // -offset width or -offset
+    //   var width = args[2] || ''
+    //   if (width == 'indent' || width == 'indent-two' || width == 'left' || width == 'right' || width == 'center') {
+    //     class_result.push(Bd_map[width]);
+    //   }
+    //   else if (width != '') {
+    //     class_result.push('Bd-indent'); // Any string is Bd-indent
+    //   }
+    // }
+    // else if (args[1] == '-compact') { // compact
+    // }
+
+    // if (this.buffer.Bd_unfill) { // Special case
+    //   return '</p><div class="' + class_result.join(' ') + '">' + '<pre>';
+    // }
+    // else {
+    //   return '</p><div class="' + class_result.join(' ') + '">';
+    // }
   },
   /**
    * Defines the end of a list
@@ -1221,7 +1334,6 @@ macros.doc = {
     list.isOpen = true;
 
     for(var i = list.flags.length - 1; i >= 0; i--) {
-      // console.log(list.flags[i]);
       switch(list.flags[i]) {
       case '-bullet':
         tag = '&compfn;';
@@ -1280,6 +1392,7 @@ macros.doc = {
   Ta: function (text) {
     return this.generateTag('span', text);
   },
+
   /**
    * Reference start. Causes a line break in the SEE ALSO section
    * and begins collection of reference information until
@@ -1292,22 +1405,24 @@ macros.doc = {
    */
   Rs: function () {
     this.buffer.references = {
-      authors: [], // %A macro
-      articleTitle: [], // %T macro
-      bookTitle: [], // %B macro
-      publisherName: [], // %I macro
-      journalName: [], // %J macro
-      reportName: [], // %R macro
-      issueNumber: [], // %N macro
-      volume_number: [], // %V macro
-      url: [], // %U macro
-      pageNumber: [], // %P macro
-      corporate: [], // %Q macro
-      location: [], // %C macro
-      date: [], // %D macro
-      optionalInformation: [], // %O macro
+      A: [], // %A macro
+      T: [], // %T macro
+      B: [], // %B macro
+      I: [], // %I macro
+      J: [], // %J macro
+      R: [], // %R macro
+      N: [], // %N macro
+      V: [], // %V macro
+      U: [], // %U macro
+      P: [], // %P macro
+      Q: [], // %Q macro
+      C: [], // %C macro
+      D: [], // %D macro
+      O: [], // %O macro
     };
+    return '<cite class="Rs">';
   },
+
   /**
    * Reference author name; one name per invocation.
    *
@@ -1317,8 +1432,9 @@ macros.doc = {
    *
    */
   '%A': function (name) {
-    this.buffer.references.authors.push(name);
+    this.buffer.references.A.push(name);
   },
+
   /**
    * Reference book title
    *
@@ -1328,11 +1444,13 @@ macros.doc = {
    *
    */
   '%B': function (title) {
-    this.buffer.references.bookTitle.push(title);
+    this.buffer.references.B.push(title);
   },
+
   '%C': function (location) {
-    this.buffer.references.location.push(location); 
+    this.buffer.references.C.push(location); 
   },
+
   /**
    * Reference date asa raw string
    *
@@ -1342,8 +1460,9 @@ macros.doc = {
    *
    */
   '%D': function (date) {
-    this.buffer.references.date.push(date);
+    this.buffer.references.D.push(date);
   },
+
   /**
    * Reference issue/publisher name
    *
@@ -1353,7 +1472,7 @@ macros.doc = {
    *
    */
   '%I': function (name) {
-    this.buffer.references.publisherName.push(name);
+    this.buffer.references.I.push(name);
   },
   /**
    * Reference journal name
@@ -1364,7 +1483,7 @@ macros.doc = {
    *
    */
   '%J': function (name) {
-    this.buffer.references.journalName.push(name);
+    this.buffer.references.J.push(name);
   },
   /**
    * Reference issue number
@@ -1375,7 +1494,7 @@ macros.doc = {
    *
    */
   '%N': function (issue) {
-    this.buffer.references.issueNumber.push(issue);
+    this.buffer.references.N.push(issue);
   },
   /**
    * Reference optional information
@@ -1386,7 +1505,7 @@ macros.doc = {
    *
    */
   '%O': function (args) {
-    this.buffer.references.optionalInformation.push(args);
+    this.buffer.references.O.push(args);
   },
   /**
    * Reference page number
@@ -1397,7 +1516,7 @@ macros.doc = {
    *
    */
   '%P': function (page) {
-    this.buffer.references.pageNumber.push(page);
+    this.buffer.references.P.push(page);
   },
   /**
    * Reference corporate author
@@ -1408,7 +1527,7 @@ macros.doc = {
    *
    */
   '%Q': function (name) {
-    this.buffer.references.corporate.push(name);
+    this.buffer.references.Q.push(name);
   },
   /**
    * Reference report name
@@ -1419,7 +1538,7 @@ macros.doc = {
    *
    */
   '%R': function (name) {
-    this.buffer.references.reportName.push(name)
+    this.buffer.references.R.push(name)
   },
   /**
    * Reference title of article
@@ -1430,7 +1549,7 @@ macros.doc = {
    *
    */
   '%T': function (title) {
-    this.buffer.references.articleTitle.push(title)
+    this.buffer.references.T.push(title)
   },
   /**
    * Reference volume
@@ -1441,10 +1560,10 @@ macros.doc = {
    *
    */
   '%U': function (url) {
-    this.buffer.references.url.push(url)
+    this.buffer.references.U.push(url)
   },
   '%V': function (volume_number) {
-    this.buffer.references.volume_number.push(volume_number);
+    this.buffer.references.V.push(volume_number);
   },
   /**
    * Reference end, prints all the references. Uses special
@@ -1456,24 +1575,54 @@ macros.doc = {
    *
    */
   Re: function () {
-    var references = [];
-    for (var key in this.buffer.references) {
-      if(key == 'authors') {
-        references.push(this.buffer.references[key].join(' and '));
-      }
-      else if(key == 'url') {
-        for(const value of this.buffer.references[key]) {
-          var link = '<a href="' + value + '">' + value + '</a>';
-          references.push(link);
-        }
-      }
-      else {
-        references.push(this.buffer.references[key].join(', '));
-      }
+    var result = ''
+    const tagMap = {
+      'T': 'span',
+      'B': 'i',
+      'I': 'i',
+      'J': 'i',
+      'R': 'span',
+      'N': 'span',
+      'V': 'span',
+      'P': 'span',
+      'Q': 'span',
+      'C': 'span',
+      'D': 'span',
+      'O': 'span',
     }
 
-    return this.generateTag('p', references.join(', ') + '.');
+    for (var key in this.buffer.references) {
+      const value_index = this.buffer.references[key];
+      if (key == 'A') {
+        if (value_index.length == 1)
+          result += '<span class="RsA">' + value_index[0] + '</span>';
+        else if (value_index.length == 2)
+          result += '<span class="RsA">' + value_index[0] + '</span>'
+                + ' and ' + '<span class="RsA">' + value_index[1] + '</span>';
+        else if (value_index.length > 2)
+          for (var i = 0; i < value_index.length; i++) {
+            if (i != value_index.length - 2)
+              result += '<span class="RsA">' + value_index[i] + '</span>' + ', '
+            else 
+              result += '<span class="RsA">' + value_index[i] + '</span>'
+                      + ', and ' + '<span class="RsA">' + value_index[++i] + '</span>';
+          }
+      }
+      else if (key == 'U') {
+        for (var i = 0; i < value_index.length; i++) {
+          const value = value_index[i]
+          var link = '<a class="RsU" href="' + value + '">' + value + '</a>';
+          result += ', ' + link;
+        }
+      }
+      else 
+        for (var i = 0;i < value_index.length; i++) 
+          result += ', ' + '<' + tagMap[key] + ' class="Rs' + key + '">' + value_index[i] + '</' + tagMap[key] + '>';
+    }
+
+    return result + '.' + '</cite>';
   },
+
   /**
    * Suppresses the whitespace between its first and second argument
    *
@@ -1484,44 +1633,28 @@ macros.doc = {
    */
   Pf: function (args) {
     args = this.parseArguments(args);
+    return args.shift() + args.shift() + ' ' + args.join(' ');
+  },
 
-    return args.shift() + args.shift() + args.join(' ');
-  },
   Ns: function (text) {
-    return "<span style=\"font-family: 'Times New Roman';\">" + text + "</span>";
+    return text;
   },
-  Sm: function (text) {
-    return '';
+
+  Ap: function (text) {
+    return '\'' + text;
   },
-  Bk: function (text) {
-    return '';
+
+  Sm: function () { // Not recommend to use, not implement now
+    
   },
-  Ek: function (text) {
-    return '';
+
+  Bk: function (args) { // In pratical it do nothing
+
   },
-  /**
-   * The `.Nm' macro is used for the document title or subject name.
-   * It has the peculiarity of remembering the first argument it
-   * was called with, which should always be the subject name of
-   * the page.  When called without arguments, `.Nm' regurgitates
-   * this initial name for the sole purpose of making less work
-   * for the author.
-   *
-   * @param {string} args
-   *
-   * @returns {string}
-   *
-   * @since 0.0.1
-   *
-   */
-  Nm: function (args) {
-    var result;
-  
-    this.buffer.name = this.buffer.name || args;
-    result = args || this.buffer.name;
-  
-    return this.generateTag('strong', result);
+
+  Ek: function () { // In pratical it do nothing
   },
+
   /**
    * The `.Fl' macro handles command line flags, it prepends
    * a dash, `-', to the flag and makes it bold.
@@ -1537,19 +1670,18 @@ macros.doc = {
    *
    */
   Fl: function (args) {
-    // console.log(args)
-    var outputString = args.replace(
-      /(<)/,
-      "</strong>$1"
-    );
-    if (outputString == outputString){ // If it is a normal string, which mean no '<' in string
-      outputString = outputString + "</strong>"
+    args = this.parseArguments(args);
+    var result = ''
+    if(args.length == 0) 
+      result += '<code class="Fl">' + '-' + '</code>';
+    else {
+      for (var value of args) {
+        result += '<code class="Fl">' + '-' + value + '</code>' + ' ';
+      }
     }
-    outputString = "<strong>-" + outputString;
-    console.log(outputString)
-    // return this.generateTag('strong', '-' + args);
-    return outputString;
+    return result;
   },
+
   /**
    * The command modifier is identical to the `.Fl' (flag) command
    * with the exception that the `.Cm' macro does not assert a dash
@@ -1563,8 +1695,9 @@ macros.doc = {
    *
    */
   Cm: function (args) {
-    return this.generateTag('strong', args);
+    return '<code class="Cm">' + args + '</code>';
   },
+
   /**
    * The .Ar argument macro may be used whenever afn argument
    * is referenced. If called without arguments,
@@ -1581,9 +1714,9 @@ macros.doc = {
    */
   Ar: function (args) {
     args = args || 'file ...';
-
-    return this.generateTag('i', args);
+    return '<var class="Ar">' + args + '</var>';
   },
+
   /**
    * The `.Op' macro places option brackets around any remaining
    * arguments on the command line
@@ -1596,8 +1729,9 @@ macros.doc = {
    *
    */
   Op: function (args) {
-    return this.generateTag('span', '[' + args + ']');
+    return '[' + args + ']';
   },
+
   /**
    * Prints an opening bracket
    *
@@ -1606,9 +1740,15 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Oo: function () {
-    return '[';
+  Oo: function (args) {
+    if (!args) {
+      return '[';
+    }
+    else {
+      return '[' + args;
+    }
   },
+
   /**
    * Prints a closing bracket
    *
@@ -1620,8 +1760,24 @@ macros.doc = {
   Oc: function () {
     return ']';
   },
+
   Ic: function (text) {
-    return this.generateTag('strong', text);
+    return '<code class="Ic">' + text + '</code>';
+  },
+
+  /**
+   * Especifies an environment variable,
+   * in practical terms, it only returns the text in normal format
+   *
+   * @param {string} args
+   *
+   * @returns {string}
+   *
+   * @since 0.0.1
+   *
+   */
+  Ev: function (args) {
+    return '<code class="Ev">' + args + '</code>';
   },
 
   /**
@@ -1639,34 +1795,54 @@ macros.doc = {
   Pa: function (args) {
     args = args || '~';
 
-    return this.generateTag('i', args);
+    return '<span class="Pa">' + args + '</span>';
   },
+
   Lb: function (text) {
     text = this.parseArguments(text);
+    var result = ''
     if(libKey[text[0]]) 
-      return this.generateTag('span', libKey[text.shift()] + text.join(' '));
+      result += libKey[text.shift()] + text.join(' ');
     else
-      return this.generateTag('span', 'library ' + '"' + text.shift() + '"' + text.join(' '));
+      result += 'library ' + '"' + text.shift() + '" ' + text.join(' ');
+
+    return '<span class="Lb">' + result + '</span>';
   },
+
   In: function (text) {
     text = this.parseArguments(text);
+    var result = ''
     if(this.isInsideOfSection('SYNOPSIS')) 
-      return  '<strong>#include &lt;' + text.shift() + '&gt;</strong> ' + text.join(' ');
+      result += '#include &lt;' + text.shift() + '&gt;';
     else 
-      return '<strong>&lt;' + text.shift() + '&gt;</strong> ' + text.join(' ');
-    
+      result += '&lt;' + text.shift() + '&gt; ';
+
+    return '<code class="In">' + result + '</code>' + ' ' +  text.join(' ');
   },
+
   Fd: function (text) {
-    return this.generateTag('strong', text);
+    return '<code class="Fd">' + text + '</code>';
   },
+
   Ft: function (name) {
-    return '<span style="font-style: italic;">' + name + '</span>';
+    return '<var class="Ft">' + name + '</var>';
   },
+
   Fo: function (name) {
-    this.buffer.functionArgs = [];
-    this.buffer.functionName = '<strong>' + name.split(' ')[0] + '</strong>'; // Only get the first name
+    // this.buffer.functionArgs = [];
+    // this.buffer.functionName = '<strong>' + name.split(' ')[0] + '</strong>'; // Only get the first name
     this.buffer.InFoMacro = true;
+    name = this.parseArguments(name)[0]; // Only care about first parameter
+    var result = ''
+
+    if (name)
+      result += '<a class="permalink" href="#' + name + '">' +
+                '<code class="Fn" id="' + name + '">' + name + '</code>' +
+                '</a>';
+    
+    return result + '(';
   },
+
   /**
    * Closes the multi parameter funcion definition and prints the
    * result
@@ -1680,11 +1856,13 @@ macros.doc = {
    *
    */
   Fc: function () {
-    var args = this.buffer.functionArgs.join(', '),
-      callParams = this.buffer.functionName + ' "' + args + '"';
+    // var args = this.buffer.functionArgs.join(', '),
+    //   callParams = this.buffer.functionName + ' "' + args + '"';
     this.buffer.InFoMacro = false;
-    return '<br>' + macros.doc.Fn.call(this, callParams);
+    // return '<br>' + macros.doc.Fn.call(this, callParams);
+    return ');';
   },
+
   /**
    * Prints a function signature, with the function name in bold
    * if no arguments are provided, returns an empty string
@@ -1699,29 +1877,45 @@ macros.doc = {
    *
    */
   Fn: function (args) {
-    var type,
-        name,
-        params,
-        storedType;
+    args = args.split('"');
+    args = args.filter(item => item !== '' && item !== ' ');
 
-    args = this.parseArguments(args);
-    if(!args[0]) {
+    if(!args[0]) // No parameter, no work
       return '';
-    }
-    // storedType = this.buffer.functionType;
-    // type = storedType ? this.generateTag('i', storedType) : '';
-    var first_argument_array = args[0].split(' ');
-    type = first_argument_array[0];
-    name = first_argument_array[first_argument_array.length - 1];
-    first_argument_array.pop()
-    var type_tag = '<span style="font-style:Italic;">' + first_argument_array.join(' ') + '</span> ';
-    args.shift()
-    params = args.join(', ') || '';
-    var parms_tag = '<span style="font-style:Italic;">' + params + '</span>';
-    // this.buffer.functionType = '';
+    
+    var first_parameter_array = args.shift().split(' ');
 
-    return this.generateTag('span', type_tag + '<strong>' + name + '</strong>' + '(' + parms_tag + ')');
+    var funcName = first_parameter_array[first_parameter_array.length - 1];
+    first_parameter_array.pop()
+
+    var funcType = first_parameter_array.join(' ');
+
+    var funcTypeTag = ''
+    var funcNameTag = ''
+    if (funcType)
+      funcTypeTag = '<var class="Ft">' + funcType + '</var>';
+    if (funcName)
+    funcNameTag = '<a class="permalink" href="#' + funcName + '">' +
+                  '<code class="Fn" id="' + funcName + '">' + funcName + '</code>' +
+                  '</a>';
+    
+    var result = '';
+    var flag = true;
+    for (var value of args) {
+      if (value != ' ' && value != ''){
+        if (flag) {
+          result += '<var class="Fa">' + value + '</var>';
+          flag = false
+        }
+        else {
+          result += ', <var class="Fa">' + value + '</var>';
+        }
+      }
+    }
+
+    return funcTypeTag + ' ' + funcNameTag + '(' + result + ')';
   },
+
   /**
    * Stores in the buffer a function argument
    *
@@ -1729,13 +1923,28 @@ macros.doc = {
    *
    */
   Fa: function (arg) {
+    var result = ''
     if (this.buffer.InFoMacro) {
-      this.buffer.functionArgs.push(arg);
+      arg = arg.split('"');
+      var flag = true;
+      for (var value of arg) {
+        if (value != ' ' && value != ''){
+          if (flag) {
+            result += '<var class="Fa">' + value + '</var>';
+            flag = false
+          }
+          else {
+            result += ', <var class="Fa">' + value + '</var>';
+          }
+        }
+      }
     }
     else {
-      return this.generateTag('i', arg);
+      result += '<var class="Fa">' + arg.replace(/"/g, '') + '</var>';
     }
+    return result;
   },
+
   /**
    * Prints the provided text in italics, if its called inside of the
    * SYNOPSIS section it also adds a line break
@@ -1748,11 +1957,12 @@ macros.doc = {
    *
    */
   Vt: function (args) {
-    var base = this.generateTag('i', args),
-      postamble = this.isInsideOfSection('SYNOPSIS') ? '<br>' : '';
-
-    return base + postamble;
+    if (this.isInsideOfSection('SYNOPSIS'))
+      return '<br><var class="Vt">' + args + '</var>';
+    else 
+      return '<var class="Vt">' + args + '</var>';
   },
+
   /**
    * References variables, print the provided arguments in italics
    *
@@ -1764,8 +1974,9 @@ macros.doc = {
    *
    */
   Va: function (args) {
-    return this.generateTag('i', args);
+    return '<var class="Va">' + args + '</var>';
   },
+  
   /**
    * Defines a variable, in practical terms, it only returns the text
    * in normal format
@@ -1778,25 +1989,13 @@ macros.doc = {
    *
    */
   Dv: function (args) {
-    return '<span style="font-family: monospace;">' + args + '</span>';
+    return '<code class="Dv">' + args + '</code>';
   },
+
   Er: function (args) {
-    return '<span style="font-family: monospace;">' + args + '</span>';
+    return '<code class="Er">' + args + '</code>';
   },
-  /**
-   * Especifies an environment variable,
-   * in practical terms, it only returns the text in normal format
-   *
-   * @param {string} args
-   *
-   * @returns {string}
-   *
-   * @since 0.0.1
-   *
-   */
-  Ev: function (args) {
-    return '<span style="font-family: monospace;">' + args + '</span>';
-  },
+
   /**
    * The `.An' macro is used to specify the name of the author
    * of the item being documented, or the name of the author of
@@ -1812,24 +2011,29 @@ macros.doc = {
    *
    */
   An: function (author) {
-    return this.generateTag('span', author);
+    return '<span class="An">' + author + '</span>';
   },
+
   Lk: function (text) {
     text = this.parseArguments(text);
-    if(text.length == 1)
-      return '<a href="' + text[0] + '">' + text[0] + '</a>';
+    if (text.length == 0)
+      return ' ';
+    else if(text.length == 1)
+      return '<a class="Lk" href="' + text[0] + '">' + text[0] + '</a>';
     else
-      return '<a href="' + text.shift() + '">' + text.join(' ') + '</a>';
+      return '<a class="Lk" href="' + text.shift() + '">' + text.join(' ') + '</a>';
   },
+
   Mt: function (text) {
     text = this.parseArguments(text);
     var result = '';
     var t;
-    while(t = text.shift()) {
-      result += '<a href="mailto:' + t + '">' + t + '</a> ';
-    }
+    while(t = text.shift())
+      result += '<a class="Mt" href="' + t + '">' + t + '</a> ';
+    
     return result;
   },
+
   /**
    * The `.Cd' macro is used to demonstrate a config
    * declaration for a device interface in a section four manual.
@@ -1847,10 +2051,12 @@ macros.doc = {
    *
    */
   Cd: function (args) {
-    var tag = this.isInsideOfSection('SYNOPSIS') ? 'p>strong' : 'strong';
-
-    return this.generateTag(tag, args);
+    if (this.isInsideOfSection('SYNOPSIS'))
+      return '<br><code class="Cd">' + args + '</code>';
+    else 
+      return '<code class="Cd">' + args + '</code>';
   },
+
   /**
    * The address macro identifies an address construct,
    * it's generally printed as a italic text.
@@ -1863,11 +2069,13 @@ macros.doc = {
    *
    */
   Ad: function (args) {
-    return this.generateTag('i', args);
+    return '<span class="Ad">' + args + '</span>';
   },
-  Ms: function (text) {
-    return this.generateTag('strong', text);
+
+  Ms: function (args) {
+    return '<span class="Ms">' + args + '</span>';
   },
+
   /**
    * Text may be stressed or emphasized with this macro, in practice,
    * the macro prints italic text
@@ -1880,8 +2088,13 @@ macros.doc = {
    *
    */
   Em: function (text) {
-    return this.generateTag('i', text);
+    text = this.parseArguments(text);
+    if (text.length == 0)
+      return ' ';
+    else
+      return '<a class="permalink" href="#' + text[0] + '">' + '<i class="Em" id="' + text[0] + '">' + text.join(' ') + '</i></a>';
   },
+
   /**
    * Represents symbolic emphasis, prints the provided arguments
    * in boldface
@@ -1894,11 +2107,16 @@ macros.doc = {
    *
    */
   Sy: function (args) {
-    return this.generateTag('strong', args);
+    if (args)
+      return '<b class="Sy">' + args + '</b>';
+    else
+      return ' ';
   },
-  No: function (text) {
-    return this.generateTag('span', text);
+
+  No: function (args) {
+    return '<span class="No">' + args + '</span>';
   },
+
   /**
    * Start the font mode until .Ef is reached, receives a font mode
    * flag as a parameter; valid font modes are:
@@ -1917,15 +2135,17 @@ macros.doc = {
    *
    */
   Bf: function (mode) {
-    var tag;
-
+    const Bf_mode = {
+      '-emphasis': 'Em',
+      '-literal': 'Li',
+      '-symbolic': 'Sy'
+    }
     mode = this.parseArguments(mode)[0];
-    tag = fontModes[mode] || 'span';
+    var tag = Bf_mode[mode] || 'Bf No';
 
-    this.buffer.activeFontModes.push(tag);
-
-    return '<' + tag + '>';
+    return '<div class="' + tag + '">';
   },
+
   /**
    * Stop the font mode started with .Bf
    *
@@ -1933,10 +2153,10 @@ macros.doc = {
    *
    */
   Ef: function () {
-    var tag = this.buffer.activeFontModes.pop();
 
-    return '</' + tag + '>';
+    return '</div>';
   },
+
   /**
    * Encloses in double quotes a given text
    *
@@ -1946,8 +2166,9 @@ macros.doc = {
    *
    */
   Dq: function (args) {
-    return this.generateTag('span', '"' + args + '"');
+    return '"' + args + '"';
   },
+
   /**
    * Prints an opening double quote
    *
@@ -1956,9 +2177,10 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Do: function () {
-    return '<span class="Do">"';
+  Do: function (args) {
+    return '"' + args;
   },
+
   /**
    * Prints a closing double quote
    *
@@ -1967,9 +2189,13 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Dc: function () {
-    return '"</span>';
+  Dc: function (args) {
+    if (args)
+      return '"' + ' ' + args;
+    else
+      return '"';
   },
+
   /**
    * Encloses a text in straight double quotes
    *
@@ -1979,7 +2205,7 @@ macros.doc = {
    *
    */
   Qq: function (args) {
-    return this.generateTag('span', '"' + args + '"');
+    return '"' + args + '"';
   },
 
   /**
@@ -1990,8 +2216,8 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Qo: function () {
-    return '<span class="Qo">"';
+  Qo: function (args) {
+    return '"' + args;
   },
 
   /**
@@ -2002,9 +2228,13 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Qc: function () {
-    return '"</span>';
+  Qc: function (args) {
+    if (args)
+      return '"' + ' ' + args;
+    else
+      return '"';
   },
+
   /**
    * Encloses text in straight single quotes
    *
@@ -2014,8 +2244,9 @@ macros.doc = {
    *
    */
   Sq: function (args) {
-    return this.generateTag('span', '\'' + args + '\'');
+    return '\'' + args + '\'';
   },
+
   /**
    * Prints a straight single qoute
    *
@@ -2024,9 +2255,10 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  So: function () {
-    return '<span class="So">\'';
+  So: function (args) {
+    return '\'' + args;
   },
+
   /**
    * Prints a straight single quote
    *
@@ -2035,9 +2267,13 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Sc: function () {
-    return '\'</span>';
+  Sc: function (args) {
+    if (args)
+      return '\'' + ' ' + args;
+    else
+      return '\'';
   },
+
   /**
    * Encloses the given text in parenthesis
    *
@@ -2047,7 +2283,7 @@ macros.doc = {
    *
    */
   Pq: function (args) {
-    return this.generateTag('span', '(' + args + ')');
+    return '(' + args + ')';
   },
 
   /**
@@ -2058,8 +2294,8 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Po: function () {
-    return '<span class="Po">(';
+  Po: function (args) {
+    return '(' + args;
   },
 
   /**
@@ -2070,8 +2306,11 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Pc: function () {
-    return ')</span>';
+  Pc: function (args) {
+    if (args)
+      return ')' + ' ' + args;
+    else
+      return ')';
   },
 
   /**
@@ -2085,7 +2324,7 @@ macros.doc = {
    *
    */
   Bq: function (args) {
-    return this.generateTag('span', '[' + args + ']');
+    return '[' + args + ']';
   },
 
   /**
@@ -2096,8 +2335,8 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Bo: function () {
-    return '<span class="Bo">[';
+  Bo: function (args) {
+    return '[' + args;
   },
 
   /**
@@ -2108,9 +2347,13 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Bc: function () {
-    return ']</span>';
+  Bc: function (args) {
+    if (args)
+      return ']' + ' ' + args;
+    else
+      return ']';
   },
+
   /**
    * Encloses in braces the given text
    *
@@ -2122,7 +2365,7 @@ macros.doc = {
    *
    */
   Brq: function (args) {
-    return this.generateTag('span', '{' + args + '}');
+    return '{' + args + '}';
   },
 
   /**
@@ -2133,8 +2376,8 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Bro: function () {
-    return '<span class="Bro">{';
+  Bro: function (args) {
+    return '{' + args;
   },
 
   /**
@@ -2145,8 +2388,11 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Brc: function () {
-    return '}</span>';
+  Brc: function (args) {
+    if (args)
+      return '}' + ' ' + args;
+    else
+      return '}';
   },
 
   /**
@@ -2160,7 +2406,7 @@ macros.doc = {
    *
    */
   Aq: function (args) {
-    return this.generateTag('span', '&lt;' + args + '&gt;');
+    return '&lt;' + args + '&gt;';
   },
 
   /**
@@ -2171,8 +2417,8 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Ao: function () {
-    return '<span class="Ao">&lt';
+  Ao: function (args) {
+    return '&lt;' + args;
   },
 
   /**
@@ -2183,8 +2429,11 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Ac: function () {
-    return '&gt</span>';
+  Ac: function (args) {
+    if (args)
+      return '&gt;' + ' ' + args;
+    else
+      return '&gt;';
   },
 
   /**
@@ -2195,9 +2444,9 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Eo: function (argus) {
-    argus = this.parseArguments(argus);
-    return this.generateTag('span', argus.shift() + argus.join(' '));
+  Eo: function (args) {
+    args = this.parseArguments(args);
+    return args.shift() + args.join(' ');
   },
 
   /**
@@ -2208,8 +2457,8 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Ec: function (argus) {
-    return this.generateTag('span', argus);
+  Ec: function (args) {
+    return args;
   },
 
   Ex: function (args) { // Ex -std [utility ...]
@@ -2218,29 +2467,32 @@ macros.doc = {
     if(args[0] == '-std')
       args.shift();
 
-    var content = this.generateTag('strong>strong', this.buffer.name) // Default to .Nm name
+    if (args.length == 0) // Default to .Nm name
+      args.push(this.buffer.name);
+
     var post = ' utility exits '
+    var result = ''
+    if (args.length == 1)
+      result += 'The <code class="Nm">' + args[0] + '</code>';
+    else if (args.length == 2){
+      result += 'The <code class="Nm">' + args[0] + '</code>'
+            + ' and ' + '<code class="Nm">' + args[1] + '</code>';
 
-    if (args.length == 1){
-      content = this.generateTag('strong>strong', args[0])
-    }
-    else if(args.length == 2) {
-      content = (this.generateTag('strong>strong', args[0]) + " and " + this.generateTag('strong>strong', args[1]) ) 
       post = ' utilities exit '
     }
-    else if(args.length >= 3) {
-      content = ''
-      for(var i = 0;i < args.length-1;i++) {
-        content += this.generateTag('strong>strong', (args[i] + ', '))
+    else if (args.length > 2){
+      result += 'The <code class="Nm">' + args[0] + '</code>';
+      for (var i = 1; i < args.length; i++) {
+        if (i != args.length - 1)
+          result += ', ' + '<code class="Nm">' + args[i] + '</code>' ;
+        else 
+          result += ', and ' + '<code class="Nm">' + args[i] + '</code>';
       }
-      content += ('and ' + this.generateTag('strong>strong', args[args.length-1]) )
       post = ' utilities exit '
     }
 
-    var pre = 'The ';
-    var post_2 = '0 on success, and >0 If an error occurs.'
-
-    return this.generateTag('span', pre + content + post + post_2);
+    const post_2 = '0 on success, and >0 If an error occurs.';
+    return result + post + post_2;
   },
 
   Rv: function (args) { // Rv	-std [function ...]
@@ -2249,29 +2501,35 @@ macros.doc = {
     if(args[0] == '-std')
       args.shift();
 
-    var content = this.generateTag('strong>strong', this.buffer.name); // Default to .Nm name
-    var post = 'function ';
+    if (args.length == 0) // Default
+      return 'Upon successful completion, the value&nbsp;0 is returned; otherwise the value&nbsp; \
+      -1 is returned and the global variable <var class="Va">errno</var> is set to indicate the error.</p>'
+    
 
-    if (args.length == 1){
-      content = this.generateTag('strong>strong', ('<br>' + args[0]))  + '(); ';
+    var post = ' function returns '
+    var result = ''
+    if (args.length == 1)
+      result += 'The <code class="Fn">' + args[0] + '</code>' + '()';
+    else if (args.length == 2){
+      result += 'The <code class="Fn">' + args[0] + '</code>'+ '()'
+            + ' and ' + '<code class="Fn">' + args[1] + '</code>' + '()';
+
+      post = ' functions return '
     }
-    else if(args.length == 2) {
-      content = (this.generateTag('strong>strong',('<br>' + args[0])) + '(); and<br>' + this.generateTag('strong>strong', args[1]) + '(); '); 
-      post = 'functions '
-    }
-    else if(args.length >= 3) {
-      content = ''
-      for(var i = 0;i < args.length-1;i++) {
-        content += this.generateTag('strong>strong', ('<br>' + args[i])) + '();, '
+    else if (args.length > 2){
+      result += 'The <code class="Fn">' + args[0] + '</code>' + '()';
+      for (var i = 1; i < args.length; i++) {
+        if (i != args.length - 1)
+          result += ', ' + '<code class="Fn">' + args[i] + '</code>' + '()';
+        else 
+          result += ', and ' + '<code class="Fn">' + args[i] + '</code>' + '()';
       }
-      content += ('and<br>' + this.generateTag('strong>strong', args[args.length-1]) ) + '(); '
-      post = 'functions '
+      post = ' functions return '
     }
 
-    var pre = 'The';
-    var post_2 = 'return the value 0 if successful; otherwise the value -1 is returned and the global variable errno is set to indicate the error.'
-
-    return this.generateTag('span', pre + content + post + post_2);  },
+    const post_2 = 'return the value 0 if successful; otherwise the value -1 is returned and the global variable <var class="Va">errno</var> is set to indicate the error.'
+    return result + post + post_2;
+  },
 
   /**
    * Replaces standard abbreviations with their formal names.
@@ -2289,16 +2547,12 @@ macros.doc = {
    */
   St: function (args) {
     var cont = '';
-    // Only use first parameter
     args = this.parseArguments(args);
-    // console.log(args);
-    var first_arg = args[0];
-
-    if(abbreviations[first_arg]) {
-      cont = this.generateTag('abbr', abbreviations[first_arg]);
-    }
-
-    return cont;
+    var first_arg = args.shift();
+    if(abbreviations[first_arg]) 
+      cont = '<span class="St">' + abbreviations[first_arg] + '</span>';
+    
+    return cont + ' ' + args.join(' ');
   },
 
   /**
@@ -2317,8 +2571,8 @@ macros.doc = {
     const regex_1 = /v[1-7]/;
     const regex_2 = /V.[1-4]/;
 
-    if(version.length == 1 && version[0] != ''){
-      var key = version[0];
+    if(version.length >= 1 && version[0] != ''){
+      var key = version.shift();
       if (regex_1.test(key)) {
         base = 'Version ' + key[1] + ' ' + base; 
       }
@@ -2337,10 +2591,10 @@ macros.doc = {
       else {
         base = base + ' ' + key;
       }     
-      return this.generateTag('span', base); 
+      return '<span class="Ux">' + base + '</span>' + ' ' + version.join(' ');
     }
     else {
-      return this.generateTag('span', base + ' ' + version.join(' '));
+      return '';
     }
   },
 
@@ -2358,14 +2612,16 @@ macros.doc = {
   Bx: function (version) {
     var base = 'BSD';
     version = this.parseArguments(version);
+    base = (version.shift() || '') + base + (version[0] ? ('-' + version.shift()) : '');
 
-    base = (version.shift() || '') + base + (version[0] ? ('-' + version.shift()) : '') + ' ' + version.join(' ');
-
-    return this.generateTag('span', base);
+    return '<span class="Ux">' + base + '</span>' + ' ' + version.join(' ');
   },
 
-  Bsx: function (text) {
-    return this.generateTag('span', 'BSD/OS ' + text);
+  Bsx: function (version) {
+    version = this.parseArguments(version);
+    var base = 'BSD/OS' + ' ' + version.shift();
+
+    return '<span class="Ux">' + base + '</span>' + ' ' + version.join(' ');
   },
 
   /**
@@ -2377,7 +2633,10 @@ macros.doc = {
    *
    */
   Nx: function (version) {
-    return this.generateTag('span', 'NetBSD ' + version);
+    version = this.parseArguments(version);
+    var base = 'NetBSD' + ' ' + version.shift();
+
+    return '<span class="Ux">' + base + '</span>' + ' ' + version.join(' ');
   },
 
   /**
@@ -2389,7 +2648,10 @@ macros.doc = {
    *
    */
   Fx: function (version) {
-    return this.generateTag('span', 'FreeBSD ' + version);
+    version = this.parseArguments(version);
+    var base = 'FreeBSD' + ' ' + version.shift();
+
+    return '<span class="Ux">' + base + '</span>' + ' ' + version.join(' ');
   },
 
   /**
@@ -2401,7 +2663,10 @@ macros.doc = {
    *
    */
   Ox: function (version) {
-    return this.generateTag('span', 'OpenBSD ' + version);
+    version = this.parseArguments(version);
+    var base = 'OpenBSD' + ' ' + version.shift();
+
+    return '<span class="Ux">' + base + '</span>' + ' ' + version.join(' ');
   },
 
   /**
@@ -2413,17 +2678,27 @@ macros.doc = {
    *
    */
   Dx: function (version) {
-    return this.generateTag('span', 'DragonFly ' + version);
+    version = this.parseArguments(version);
+    var base = 'DragonFly' + ' ' + version.shift();
+
+    return '<span class="Ux">' + base + '</span>' + ' ' + version.join(' ');
   },
+
   "\\&": function (text) {
     return text;
   },
+
   "\\e": function (text) {
     return this.generateTag('span', '\\');
   },
-  'br': function (args) {
-    return '<br>';
+
+  'br': function () {
+    if (this.buffer.Bd_unfill)
+      return '&#10;';
+    else
+      return '</p><p class="Pp">';
   },
+
   // Other macro not use in FreeBSD
   // /**
   //  * Encloses a given text in XX
@@ -2513,6 +2788,13 @@ HTMLGenerator.prototype.generate = function (source, lib) { // lib parameter is 
 
   // Buffer to store the message while parsing
   this.buffer = {
+    date: '', // Use for Dd macro
+    os: '', // Use for Os macro
+    title: '', // Use for Dt macro
+    section: '', // Use for Dt macro
+    volume: '', // Use for Dt macro
+    sideText: '', // Use for Dt macro
+    midText: '', // Use for Dt macro
     style: { // All macro
       indent: 8, // Default set the tab sapce, ex the text below .Sh macro. The unit is %
       fontSize: 16 // Defaul set the font size
@@ -2522,7 +2804,7 @@ HTMLGenerator.prototype.generate = function (source, lib) { // lib parameter is 
     openTags: [], // Use for Pp macro
     display: [], // Use for Bd, Ed macro
     lists: [], // Use for Bl, El macro
-    references: [], // Rs macro
+    references: {}, // Rs macro
     fontModes: [],
     sectionTags: [],
     activeFontModes: [], // Use fo Bf Ef macro
@@ -2530,15 +2812,49 @@ HTMLGenerator.prototype.generate = function (source, lib) { // lib parameter is 
     Bd_unfill: false, // Use for Bd macro
   };
 
-  var ast_recurese = this.recurse(ast);
+  var ast_recurese = this.recurse(ast, 0);
 
+  var begin = '<meta charset="utf-8"> \
+               <meta name="viewport" content="width=device-width, initial-scale=1.0">'
+  
+  var top_1 = '<table class="head"> \
+                  <tbody> \
+                    <tr> \
+                      <td class="head-ltitle">'
+  var top_2 = '</td><td class="head-vol">'
+  var top_3 = '</td><td class="head-rtitle">'
+  var top_4 = '</td> \
+                      </tr> \
+                    </tbody> \
+                  </table>'
+  var top = top_1 + this.buffer.sideText 
+          + top_2 + this.buffer.midText 
+          + top_3 + this.buffer.sideText
+          + top_4;
+
+  var content_1 = '<div class="manual-text">' 
+  var content_2 = '</div>'
+  var content = content_1 + ast_recurese 
+              + content_2;
+  
+  var end_1 = '<table class="foot"> \
+                <tbody> \
+                  <tr> \
+                    <td class="foot-date">'
+  var end_2 = '</td> <td class="foot-os">'
+  var end_3 = '</td> \
+                </tr> \
+                </tbody> \
+              </table>'
+  var end = end_1 + this.buffer.date 
+          + end_2 + this.buffer.os
+          + end_3;
+    
+            
   // Post process
-  // 1. Add footer
-  var day_tag = '</section><br><div style=" display: flex; justify-content: space-between;">' + 
-  '<span style="text-align: left;">' + this.buffer.date + 
-  '</span><span style="text-align: right;">' + this.buffer.os + '</span></div>';
+
   // 2. Remove the space of Do, Dc, Qo, Qc, So, Sc, Po, Pc
-  return ast_recurese + day_tag;
+  return begin + top + content + end;
 };
 
 /**
@@ -2550,9 +2866,9 @@ HTMLGenerator.prototype.generate = function (source, lib) { // lib parameter is 
  * @since 0.0.1
  *
  */
-HTMLGenerator.prototype.recurse = function (arr) {
-  //console.log(arr);
-  return arr.reduce(this.reduceRecursive.bind(this), '');
+HTMLGenerator.prototype.recurse = function (arr, layer) {
+  return arr.reduce((result, node) => this.reduceRecursive(result, node, layer), '');
+  // return arr.reduce(this.reduceRecursive.bind(this), '', 'layer');
 };
 
 /**
@@ -2566,7 +2882,7 @@ HTMLGenerator.prototype.recurse = function (arr) {
  * @since 0.0.1
  *
  */
-HTMLGenerator.prototype.reduceRecursive = function (result, node) { // result is current local parsing result, node is current node
+HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) { // result is current local parsing result, node is current node
   var func,
     args;
 
@@ -2576,11 +2892,11 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node) { // result is
       result += this.closeAllTags(this.buffer.openTags);
     }
     func = this.macros[node.value] || this.undefMacro; // Get the macro parsing 
-    args = node.nodes.length ? this.recurse(node.nodes) : ''; // Get argument begind the macro now
-    console.log('Macro:', node.value, 'Args:', args);
+    args = node.nodes.length ? this.recurse(node.nodes, layer+1) : ''; // Get argument begind the macro now
+    // console.log('Macro:', node.value, 'Args:', args);
     result += func.call(this, args, node) || '';
   } else {
-    if (this.buffer.Bd_unfill == true) {
+/*     if (this.buffer.Bd_unfill == true) {
       if(node.value == ' ') {
         result += '<br>'
       }
@@ -2589,11 +2905,16 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node) { // result is
       }
       console.log('Bd_uunfill:', node.value);
     }
-    else {
+
+    if (node.value != ' ' && layer == 0)
+      result += '<p class="Pp">' + node.value + '</p>';
+    else */
+    if (this.buffer.Bd_unfill && node.value == ' ')
+      result += '&#10;';
+    else
       result += this.cleanQuotes(node.value); // If not macro, clean the " character
-    }
   }
-  console.log('Result: ',result)
+  // console.log('Result: ',result)
   return result;
 };
 

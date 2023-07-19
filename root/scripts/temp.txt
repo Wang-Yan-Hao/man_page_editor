@@ -1,10 +1,221 @@
-.\"- Dd macro
 .Dd $Mdocdate: July 2 2018$
-.Dt LS 1
-.Os BSD 4.3
-.Sh Name
-.Bd -literal 
+.Dt ls 1
+.Os
+.Nm ls
+.Nd 123 123
+.Sh name awd
 123
-456
+.Ss test
+123
+.Sh name
+.Sx 123
+.Xr find 1 2 3
+
+234
+.Tg apple
+
+.Pp
+qwe
+qwe
+.Bd -centered -offset indent
+bded
+234
+
+   123
+.Xr 123
 .Ed
+.D1 1 2 3
+.Dl 1 2 3
+4 5 6
+.Ql 7 8 9
+10 11 12
+.Rs
+.%A A1
+.%A A2
+.%A A3
+.%T T1
+.%T T2
+.%T T3
+123
+.%B B1
+.%B B2
+.%B B3
+.%I I1
+.%I I2
+.%I I3
+.%J J1
+.%J J2
+.%J J3
+.%R R1
+.%R R2
+.%R R3
+.%N N1
+.%N N2
+.%N N3
+.%V V1
+.%V V2
+.%V V3
+.%U U1
+.%U U2
+.%U U3
+.%P P1
+.%P P2
+.%P P3
+.%Q Q1
+.%Q Q2
+.%Q Q3
+.%C C1
+.%C C2
+.%C C3
+.%D D1
+.%D D2
+.%D D3
+.%O O1
+.%O O2
+.%O O3
+.Re
+.Pf a b c
+.Ns d e f
+
+.Ap 1 2 3
+
+.Bk -words
+.Ek
+g h i
+
+.Fl
+.Fl 123 123 456
+
+.Cm 1 2 3
+.Cm 2 3 4
+
+.Ar
+.Ar 1 2 3
+
+.Op
+.Op 1 2 3
+
+1 2 3
+4 5 6
+
+.Oo
+2 3 4
+.Oc
+
+.Ic 1 2 3
+.Ic :wq
+
+.Ev 1 2 3
+.Ev 123
+
+.Pa
+.Pa 1 2 3
+
+.Lb 1 2 3
+.Lb libmandoc
+
+.In 2 3 4
+.In test
+
+.Fd #ifdef 123
+.Ft 4 5 6
+
+.Fa "argtype argname" "apple"
+
+.Fo funcname 34
+.Fa "argtype argname" "apple"
+...
+.Fc
+
+Fnnnnnn
+
+.Fn "int funcname 123" "int	arg0" "int arg1"
+
+.Fn "123 123" "int	arg0" "int arg1"
+
+.Vt a b c
+.Vt b c d
+
+.Sh SYNOPSIS
+123
+.Vt b c d
+.Vt e f g
+.Vt h i j
+
+.Va a b c
+
+.Dv 1 2 3
+
+.Er 2 3 4
+
+.Ev 1 2 3
+
+.An 1 2 3
+
+.Lk https://bsd.lv "The	BSD.lv Project" 123
+.Lk https://bsd.lv
+
+.Mt discuss@manpages.bsd.lv 123
+
+.Cd device le0 at scode?
+
+.Sh name
+.Cd device le0 at scode?
+
+.Ad 0x00000000 23
+
+.Ad [0,$]
+
+.Ms 1 2 3
+
+.Em 1 2 3
+
+.Sy 1 2 3
+
+.No 1 2 3
+
+.Bf Em
+2 3 4
+7 8 9
+.Ef 4 5 6
+
+.Dq 1 2 3 
+.Do 2 3 4
+3 4 5
+.Dc 4 5 6
+
+.Qq a b c
+.Qo b v c
+b c x
+.Qc 1 2 3
+
+.Eo (
+2 3 4
+.Ec )
+
+
+.Sh name
+
+.Ex -std 1 2 3
+
+.Ex 1
+
+.Ex 1 2
+
+.Rv -std 1 2 3
+
+.Rv 1
+
+.Rv
+
+.Rv 1 2
+
+.St -ansiC 2 3Z
+
+.At III 1 2 
+
+.Bx 1 2 3
+
+.Bsx 1 2 3
+
 

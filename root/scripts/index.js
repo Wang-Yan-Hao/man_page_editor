@@ -109,10 +109,10 @@ function search_content() {
 // Generated content
 function generate_content() {
   let editor_content = editor.getValue();  // Editor content
-  console.log('hello')
   var generator = new Jroff.HTMLGenerator();
   var result = generator.generate(editor_content, 'doc');
-  output_session.contentDocument.body.innerHTML = '<link rel="stylesheet" href="styles/jroff.css">' + 
-  result
+  output_session.contentDocument.body.innerHTML = '<link rel="stylesheet" href="styles/mandoc.css">'
+                                                + '<link rel="stylesheet" href="styles/fix.css">'
+                                                + result
 }
 

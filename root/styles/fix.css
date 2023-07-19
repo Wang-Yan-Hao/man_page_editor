@@ -1,0 +1,12 @@
+
+table.head, table.foot { width: 100%; }
+td.head-rtitle, td.foot-os { text-align: right; }
+td.head-vol { text-align: center; }
+.Nd, .Bf, .Op { display: inline; }
+.Pa, .Ad { font-style: italic; }
+.Ms { font-weight: bold; }
+.Bl-diag > dt { font-weight: bold; }
+code.Nm, .Fl, .Cm, .Ic, code.In, .Fd, .Fn, .Cd { font-weight: bold;
+    font-family: inherit; }
+
+
