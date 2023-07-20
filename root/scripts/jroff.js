@@ -1325,6 +1325,7 @@ macros.doc = {
    *
    */
   It: function (args) {
+    return ''
     var list = this.buffer.lists[0],
       pre = list.isOpen ? '</span></li>' : '',
       tagStyles = '',
@@ -1389,6 +1390,7 @@ macros.doc = {
       tag + '</span> <span style="' + "display:inline-block;" + contentStyles + '">'
     );
   },
+  
   Ta: function (text) {
     return this.generateTag('span', text);
   },

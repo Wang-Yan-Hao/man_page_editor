@@ -1,112 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>FreeBSD Online Man Page Editor</title>
-   <script>
-      // Display confirmation message when closing the page
-      // window.addEventListener('beforeunload', function(e) {
-      //    // Custom message to inform the user
-      //    var confirmationMessage = 'Your content may not be stored. Are you sure you want to leave this page?';
-      //    // Some browsers require the confirmation message to be set
-      //    e.returnValue = confirmationMessage;  
-      //    return confirmationMessage;
-      // });
-   </script>
+
    <link rel="stylesheet" href="styles/reset.css">
    <link rel="stylesheet" href="styles/index.css">
-
-   <style>
-      .file-title-container {
-         flex-direction: row;
-         display: flex;
-         align-items: center;
-         height: 15px;
-      }
-      #button {
-         /* display: inline-block;
-         padding: 10px;
-         background-color: #ccc;
-         cursor: pointer; */
-         margin-left: auto;
-      }
-      
-      #parsing_error_window {
-         display: none;
-         position: absolute; /* Position the window relative to the viewport */
-         width: 200px;
-         height: 150px;
-         overflow-y: auto;
-         background-color: #f9f9f9;
-         border: 1px solid #aaa;
-         padding: 15px;
-         top: 55px; /* Adjust the desired top position */
-         right: 120px; /* Adjust the desired left position */
-         font-size: 13px;
-      }
-
-      #closeButton {
-         position: absolute;
-         top: 0px;
-         right: 0px;
-         cursor: pointer;
-         height: 18px;
-      }
-
-      .file-title-container > a > img {
-         width: 25px;
-      }
-
-      .file-title-container > a {
-         margin-right: 25px;
-      }
-   </style>
-  
 </head>
+
 <body>
    <div class="title-container">
       <h1 class="title">FreeBSD Online Man Page Editor</h1>
-      
+
       <label class="input1_txt">Content:</label>
       <input type="text" id="input1"><br>
 
       <label class="selectMenu_txt">Section:</label>
       <select id="selectMenu">
-        <option value="option0">All Sections</option>
-        <option value="option1">1 - General Commands</option>
-        <option value="option2">2 - System Calls</option>
-        <option value="option3">3 - Subroutines</option>
-        <option value="option4">4 - Special Files</option>
-        <option value="option5">5 - File Formats</option>
-        <option value="option6">6 - Games</option>
-        <option value="option7">7 - Macros and Conventions</option>
-        <option value="option8">8 - Maintenance Commands</option>
-        <option value="option9">9 - Kernel Interface</option>
-        <option value="optionn">n - New Commands</option>
+         <option value="option0">All Sections</option>
+         <option value="option1">1 - General Commands</option>
+         <option value="option2">2 - System Calls</option>
+         <option value="option3">3 - Subroutines</option>
+         <option value="option4">4 - Special Files</option>
+         <option value="option5">5 - File Formats</option>
+         <option value="option6">6 - Games</option>
+         <option value="option7">7 - Macros and Conventions</option>
+         <option value="option8">8 - Maintenance Commands</option>
+         <option value="option9">9 - Kernel Interface</option>
+         <option value="optionn">n - New Commands</option>
       </select>
 
-      <a title="Search" onclick="search_content()" class="search" href="javascript:null"> 
+      <a title="Search" onclick="search_content()" class="search">
          <img src="./img/search_2.png">
       </a>
-      <a title="Generate Content" href="javascript:null" onclick="generate_content()"> 
+      <a title="Generate Content" onclick="generate_content()">
          <img src="./img/html_2.png">
       </a>
-      <a title="Save Content" href="javascript:null" onclick="store_content()"> 
+      <a title="Save Content" onclick="store_content()">
          <img src="./img/save_2.ico">
       </a>
-      <!-- <a title="Download patch" href="javascript:null" onclick="patch_download()">
+      <!-- <a title="Download patch"onclick="patch_download()">
          <img src="./img/download_2.png" >
       </a> -->
-      <a title="FreeBSD Bugzilla" href="javascript:null" onclick="window.open('https://bugs.freebsd.org/bugzilla/','_blank')"> 
+      <a title="FreeBSD Bugzilla" onclick="window.open('https://bugs.freebsd.org/bugzilla/','_blank')">
          <img src="./img/web_2.png">
       </a>
-      <a title="Help" href="pages/help.html" target="_blank"> 
+      <a title="Help" href="pages/help.html" target="_blank">
          <img src="./img/help_2.png">
       </a>
    </div>
-
-
 
    <div class="editor-container">
       <div class="left">
@@ -122,11 +66,18 @@
    </div>
 
    <!-- include ace.js by CDN -->
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.11.2/ace.js" integrity="sha512-AhCq6G80Ge/e6Pl3QTNGI2Je+6ixVVDmmE4Nui8/dHRBKxMUvjJxn6CYEcMQdTSxHreC3USOxTDrvUPLtN5J7w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> 
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.11.2/ace.js"
+      integrity="sha512-AhCq6G80Ge/e6Pl3QTNGI2Je+6ixVVDmmE4Nui8/dHRBKxMUvjJxn6CYEcMQdTSxHreC3USOxTDrvUPLtN5J7w=="
+      crossorigin="anonymous" referrerpolicy="no-referrer"></script>
    <!-- include diff.js by CDN -->
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js" integrity="sha512-vco9RAxEuv4PQ+iTQyuKElwoUOcsVdp+WgU6Lgo82ASpDfF7vI66LlWz+CZc2lMdn52tjjLOuHvy8BQJFp8a1A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> 
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js"
+      integrity="sha512-vco9RAxEuv4PQ+iTQyuKElwoUOcsVdp+WgU6Lgo82ASpDfF7vI66LlWz+CZc2lMdn52tjjLOuHvy8BQJFp8a1A=="
+      crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
    <script src="scripts/jroff.js"></script>
    <script src="scripts/index.js"></script>
+   <script src="scripts/other.js"></script>
    <script src="scripts/patch_download.js"></script>
 </body>
+
 </html>

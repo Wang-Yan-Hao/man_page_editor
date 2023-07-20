@@ -3,6 +3,7 @@ var editor = ace.edit("editor"); // Set editor to id="editor" tag in html
 editor.setOption("wrap", "free"); // Long lines will automatically wrap to the next line when they reach the edge of the editor, without inserting line breaks or truncating the content.
 editor.session.setMode("ace/mode/text"); // Set editor syntax to asciidoc
 
+// Config file
 var rawFile = new XMLHttpRequest();
 rawFile.onreadystatechange = function() {
   if (rawFile.readyState === 4) {
@@ -13,7 +14,6 @@ rawFile.onreadystatechange = function() {
 rawFile.open("GET", "scripts/temp.txt", true);
 rawFile.send();
 
-var output_session = document.querySelector("#output"); // output session set to id="output" tag in html
 let configFile = "";
 // Get the config data
 async function fetchConfig() {
@@ -53,7 +53,7 @@ function searchKey(jsonObj, key) {
   return result;
 }
 
-// Give github url to get content
+// Give github url to get man page source code
 function github_get(url){
   var request = new XMLHttpRequest();
   request.open("GET", url, false);
@@ -83,14 +83,13 @@ function search_content() {
       var search_key = input1 + '.' +  i.toString();
       const result = searchKey(json_map, search_key);
       if (result !== null) {
-        github_raw_url = github_raw_url + result.substr(9, result.length); // remove "/usr/src" string
+        github_raw_url = github_raw_url + result.substr(9, result.length); // Remove "/usr/src" string
         github_get(github_raw_url)   
         return;
       }
     }
   }
   else if (selectOption == "optionn") { // option n
-
   }
   else {
     const result = searchKey(json_map, search_key);
@@ -104,15 +103,14 @@ function search_content() {
   window.alert("Search no result")
 }
 
-
-
+var output_session = document.querySelector("#output"); // output session set to id="output" tag in html
 // Generated content
 function generate_content() {
   let editor_content = editor.getValue();  // Editor content
   var generator = new Jroff.HTMLGenerator();
   var result = generator.generate(editor_content, 'doc');
-  output_session.contentDocument.body.innerHTML = '<link rel="stylesheet" href="styles/mandoc.css">'
-                                                + '<link rel="stylesheet" href="styles/fix.css">'
+  output_session.contentDocument.body.innerHTML = '<link rel="stylesheet" href="styles/jroff/mandoc.css">'
+                                                + '<link rel="stylesheet" href="styles/jroff/fix.css">'
                                                 + result
 }
 
