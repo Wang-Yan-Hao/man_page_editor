@@ -84,7 +84,10 @@ function search_content() {
       const result = searchKey(json_map, search_key);
       if (result !== null) {
         github_raw_url = github_raw_url + result.substr(9, result.length); // Remove "/usr/src" string
-        github_get(github_raw_url)   
+        github_get(github_raw_url)
+
+        window.current_link_1 = 'a' + result;
+        window.current_link_2 = 'b' + result;
         return;
       }
     }
@@ -96,6 +99,9 @@ function search_content() {
     if (result !== null) {
       github_raw_url = github_raw_url + result.substr(9, result.length);
       github_get(github_raw_url)   
+
+      window.current_link_1 = 'a' + result;
+      window.current_link_2 = 'b' + result;
       return;
     }
   }

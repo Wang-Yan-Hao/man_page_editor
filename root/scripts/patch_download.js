@@ -9,7 +9,10 @@ function download(filename, text) {
 }
 
 function patch_download() {
-   var diff = Diff.createTwoFilesPatch(window.current_link_1, window.current_link_2, window.origin_content, window.editor_content ); // use jsdiff create diff file string
+   var editor = ace.edit("editor"); // Set editor to id="editor" tag in html
+   let editor_content = editor.getValue();  // Editor content
+
+   var diff = Diff.createTwoFilesPatch(window.current_link_1, window.current_link_2, window.origin_content, editor_content ); // use jsdiff create diff file string
    download("diff.patch", diff);
 }
 
