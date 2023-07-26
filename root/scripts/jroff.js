@@ -1225,6 +1225,10 @@ macros.doc = {
     if (flag == 1)
       result = result.slice(0, -1);
 
+    if (result[0] == '(') { // .Xr xterm 1 Pq Pa ports/x11/xterm ,
+      result = ' ' + result
+    }
+
     return '<a class="Xr">' + name + number + '</a>' + result;
   },
 
@@ -1348,7 +1352,6 @@ macros.doc = {
     args = tmp[0];
     var remain_args = tmp[1];
     args = this.parseArguments(args)
-    console.log('Ql:', args);
 
     var flag = 0
     for (var i = 0; i < args.length; i++){
@@ -1385,8 +1388,10 @@ macros.doc = {
       speical += result[result.length-1];
       result = result.slice(0, -1);
     }
-    return '‘' + result + '’' + speical + remain_args;
 
+    result = result.replace('Actual_a_', '');
+
+    return '‘' + result + '’' + speical + remain_args;
   },
 
   /**
@@ -1677,7 +1682,7 @@ macros.doc = {
         //             '<a class="permalink" href="#' + args_content + '">' + args +
         //             '</a>' + 
         //           '</dt>';
-        return '</dd><dt>' + args + '</dt><dd>';
+        return '</dd><dt id=""><a class="permalink" href="">' + args + '<a/></dt><dd>';
     }
 
   },
@@ -2022,6 +2027,8 @@ macros.doc = {
     if (remain_args[0] == '<' && this.startsWithHTMLTag(remain_args, 'ns') == false){ // result = result + ' ';
       result = result + ' ';
     }
+
+    result = result.replace('Actual_a_', '');
     return result + remain_args;
   },
 
@@ -2222,6 +2229,8 @@ macros.doc = {
     if (flag == 1)
       result += '</span>';
 
+    result = result.replace('Actual_a_', '');
+    remain_args = remain_args.replace('Actual_a_', '');
     return result + remain_args;
   },
 
@@ -2717,7 +2726,49 @@ macros.doc = {
    *
    */
   Qq: function (args) {
-    return '“' + args + '”';
+    var result = '';
+    var tmp = this.splitHTMLString(args)
+    args = tmp[0];
+    var remain_args = tmp[1];
+    args = this.parseArguments(args)
+    console.log(args);
+    console.log(remain_args);
+    var flag = 0
+    for (var i = 0; i < args.length; i++){
+      var value = args[i];
+      
+      if (specialCharacter.hasOwnProperty(value)){
+        var tag_value = specialCharacter[value]
+
+        if (flag == 1) {
+          if (tag_value == '(')
+            tag_value = ' ' + tag_value;
+          
+          result = result.slice(0,-1) // close need remove space
+          result += tag_value;
+          flag = 0;
+        }
+        else {
+          result += tag_value;
+        }
+      } else{
+        if (flag == 0 && i != 0)
+          result += ' ';
+        flag = 1;
+        result = result + value + ' ';
+      }
+    }
+
+    var speical = ''; //.Qq "exfxcxdxbxegedabagacad" ,
+    if (specialCharacter.hasOwnProperty(result[result.length-1]) && remain_args == '') { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      speical += result[result.length-1];
+      result = result.slice(0, -1);
+    }
+    else if (specialCharacter.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      speical += remain_args[remain_args.length-1];
+      remain_args = remain_args.slice(0, -1);
+    }
+    return '"' + result + remain_args + '"' + speical;
   },
 
   /**
@@ -2805,6 +2856,7 @@ macros.doc = {
       speical += args[args.length-1];
       args = args.slice(0, -1);
     }
+    args = args.replace('Actual_a_', '');
     return '(' + args + ')' + speical;
   },
 
@@ -3119,8 +3171,13 @@ macros.doc = {
       }
       else {
         base = base + ' ' + key;
-      }     
-      return '<span class="Ux">' + base + '</span>' + ' ' + version.join(' ');
+      }
+      
+      var space = ' ';
+      if (specialCharacter.hasOwnProperty(version[0][0])) { // .At v1 .
+        space = '';
+      }
+      return '<span class="Ux">' + base + '</span>' + space + version.join(' ');
     }
     else {
       return '';
@@ -3271,7 +3328,9 @@ macros.doc = {
 
   Tn: function (args) {
     var result = ''
-    args = this.splitHTMLString(args)[0];
+    var tmp = this.splitHTMLString(args)
+    args = tmp[0];
+    var remain_args = tmp[1];
     args = this.parseArguments(args);
     var flag = 0
     for (var i = 0; i < args.length; i++) {
@@ -3290,7 +3349,7 @@ macros.doc = {
     if(flag == 1) // If the last is flag = 1, it will generate a redundant sapce
       result = result.slice(0, -1);
 
-    return result;
+    return result + remain_args;
   },
 
   // /**
@@ -3501,13 +3560,15 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) { // re
     else {
       this.buffer.firstMacroSh = false;
     }
-    
+
+
     if (node.kind == 7) { // Escape character
       console.log('Escape', node.value);
-      this.buffer.meetEscape = true;
+     
       args = node.nodes.length ? this.recurse(node.nodes, layer+1) : ''; // Get argument begind the macro now
-
+      console.log('Escape args', args);
       if (node.value == '\\&') {
+        this.buffer.meetEscape = true;
         result = result.slice(0, -1); // The \\& will generate a space sholud be ignore in the before string
         //result += '\\&';
         result += '';
@@ -3516,6 +3577,8 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) { // re
         result += '-';
       } else if  (node.value == '\\e') {
         result += '\\';
+      } else if (node.value == '\\~') {
+        result += ' ';
       }
       else {
         result += node.value.substring(1);
@@ -3533,13 +3596,19 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) { // re
       result += func.call(this, args, node) || '';
     }
   } else {
+    if (node.kind == 5 && this.buffer.meetEscape) {
+      node.value = 'Actual_a_' + node.value;
+      console.log('ACTUAL', node.value);
+    }
+    this.buffer.meetEscape = false;
+
     if (this.buffer.Bd_unfill && node.value == ' ')
       result += '&#10;';
     else
       if (node.value == '\" \"') {
         result += 'Actual_a_space';
       }
-      result += this.cleanQuotes(node.value); // If not macro, clean the " character
+    result += this.cleanQuotes(node.value); // If not macro, clean the " character
   }
   console.log('Result: ',result)
   return result;
