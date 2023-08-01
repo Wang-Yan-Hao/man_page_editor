@@ -923,8 +923,8 @@ function Sx_result (args) {
           tag_value = ' ' + tag_value;
         
         const lastIndex = result.lastIndexOf('#') + 1;
-        const vlaue = result.substring(lastIndex);
-        result += '">' + vlaue + '</a>' + tag_value;
+        const value = result.substring(lastIndex);
+        result += '">' + value + '</a>' + tag_value;
         flag = 0;
       }
       else {
@@ -947,14 +947,39 @@ function Sx_result (args) {
 
   if (flag == 1) { // Close and remove redundant space
     const lastIndex = result.lastIndexOf('#') + 1;
-    const vlaue = result.substring(lastIndex);
-    result += '">' + vlaue + '</a>';
+    const value = result.substring(lastIndex);
+    result += '">' + value + '</a>';
   }
   else if (flag == 0) { // Final need a space
     result += ' ';
   }
 
   result = result.replace(/Actual_a_/g, '');
+  return result;
+}
+
+function Mt_result (args) {
+  var result = '';
+  var flag = -1;
+  for (var i = 0 ;i < args.length; i++){
+    var value = args[i];
+    if (specialCharacter.hasOwnProperty(value)){
+      if (value == '|' || value == '(') 
+        result += ' ' + specialCharacter[value];
+      else 
+        result += specialCharacter[value];
+      
+      flag = 0;
+    }
+    else if (flag != -1) {
+      result += ' ' + '<a class="Mt" href="mailto:' + value + '">' + value + '</a>';
+      flag = 1;
+    }
+    else {
+      result += '<a class="Mt" href="mailto:' + value + '">' + value + '</a>';
+      flag = 1;
+    }
+  }
   return result;
 }
 
@@ -1004,6 +1029,115 @@ function Ar_result(args, tag, tag_class) {
   return result;
 }
 
+function Fl_result (args) {
+  var result = '';
+  var flag = -1;
+  for (var i = 0 ;i < args.length; i++){
+    var value = args[i];
+    if (specialCharacter.hasOwnProperty(value)){
+      if (value == '|') 
+        result += ' ' + specialCharacter[value];
+      else 
+        result += specialCharacter[value];
+      
+      flag = 0;
+    }
+    else if (flag != -1) {
+      result += ' ' + '<code class="Fl">' + '-' + value + '</code>';
+      flag = 1;
+    }
+    else {
+      result += '<code class="Fl">' + '-' + value + '</code>';
+      flag = 1;
+    }
+  }
+  return result;
+}
+
+function Em_result (args) {
+  var flag = -1, result = '';
+  for (var i = 0; i < args.length; i++) {
+    var value = args[i];
+    if (specialCharacter.hasOwnProperty(value)){
+      var tag_value = specialCharacter[value]
+      if (flag == 1) { // Close and remove redundant space
+        if (tag_value == '(')
+          tag_value = ' ' + tag_value;
+        
+        result += '</i></a>' + tag_value;
+        flag = 0;
+      }
+      else {
+        result += tag_value;
+      }
+    } else{
+      if (flag == 0) {
+        result += ' ' + '<a class="permalink" href="#' + value + '">' + '<i class="Em" id="' + value + '">' + value;
+        flag = 1;
+      }
+      else if (flag == -1) { // If first meet, no space need
+        result += '<a class="permalink" href="#' + value + '">' + '<i class="Em" id="' + value + '">' + value;
+        flag = 1;
+      }
+      else {
+        result = result + ' ' + value;
+      }
+    }
+  }
+
+  if (flag == 1) { // Close and remove redundant space
+    result += '</i></a>';
+  }
+  else if (flag == 0) { // Final need a space
+    result += ' ';
+  }
+
+  result = result.replace(/Actual_a_/g, '');
+  return result;
+}
+
+function Sy_result (args) {
+  var flag = -1, result = '';
+  for (var i = 0; i < args.length; i++) {
+    var value = args[i];
+    if (specialCharacter.hasOwnProperty(value)){
+      var tag_value = specialCharacter[value]
+      if (flag == 1) { // Close and remove redundant space
+        if (tag_value == '(')
+          tag_value = ' ' + tag_value;
+        
+        result += '</b></a>' + tag_value;
+        flag = 0;
+      }
+      else {
+        result += tag_value;
+      }
+    } else{
+      if (flag == 0) {
+        result += ' ' + '<a class="permalink" href="#' + value + '">' + '<b class="Sy" id="' + value + '">' + value;
+        flag = 1;
+      }
+      else if (flag == -1) { // If first meet, no space need
+        result += '<a class="permalink" href="#' + value + '">' + '<b class="Sy" id="' + value + '">' + value;
+        flag = 1;
+      }
+      else {
+        result = result + ' ' + value;
+      }
+    }
+  }
+
+  if (flag == 1) { // Close and remove redundant space
+    result += '</b></a>';
+  }
+  else if (flag == 0) { // Final need a space
+    result += ' ';
+  }
+
+  result = result.replace(/Actual_a_/g, '');
+  return result;
+}
+
 function Nd_result (args) {
   var flag = -1, result = '';
   for (var i = 0; i < args.length; i++){
@@ -1012,30 +1146,31 @@ function Nd_result (args) {
     if (specialCharacter.hasOwnProperty(value)){
       var tag_value = specialCharacter[value]
 
-      if (flag == 1) {
-        if (tag_value == '(')
-          tag_value = ' ' + tag_value;
-        
-        result = result.slice(0,-1) // close need remove space
+      if (tag_value == '(' || tag_value == '[')
+        tag_value = ' ' + tag_value;
+
+      if (flag == 1) { 
+        result = result.slice(0,-1) // Close the tag and remove redundant space
         result += tag_value;
-        flag = 0;
       }
       else {
         result += tag_value;
       }
+      
+      flag = 0;
     } else{
-      if (flag == 0 && i != 0)
+      if (flag == 0) // Add space after the spicail character
         result += ' ';
       flag = 1;
-      result = result + value + ' ';
+      result += value + ' ';
     }
   }
 
-  if (flag == 1)
+  if (flag == 1) // 不知道須不需要，因為現在 result 最後面一定沒有空白
     result = result.slice(0, -1);
-  if (result[0] == '(') { // .Xr xterm 1 Pq Pa ports/x11/xterm ,
-    result = ' ' + result
-  }
+  // if (result[0] == '(') { // .Xr xterm 1 Pq Pa ports/x11/xterm ,
+  //   result = ' ' + result
+  // }
 
   result = result.replace(/Actual_a_/g, '');
   return result;
@@ -1232,7 +1367,7 @@ macros.doc = {
     var remain_args = tmp[1];
 
     var result = Nd_result(args);
-    return '— ' + '<span class="Nd">' + result + '</span>' + remain_args;
+    return '—' + ' ' + '<span class="Nd">' + result + '</span>' + remain_args;
   },
 
   /**
@@ -1300,7 +1435,7 @@ macros.doc = {
 
   /**
    * The `.Xr' macro expects the first argument to be a manual page
-   * name. The optional second argument, if a string
+   * name. The optional second argument, if a strinㄌ
    * (defining the manual section), is put into parentheses.
    *
    * @argument {string} args.name name of the manual page
@@ -1325,6 +1460,7 @@ macros.doc = {
     number = args[0] ? '(' + args.shift() + ')' : '';
 
     var result = Nd_result(args);
+
     return '<a class="Xr">' + name + number + '</a>' + result + remain_args;
   },
 
@@ -1461,23 +1597,23 @@ macros.doc = {
     args = this.parseArguments(args);
     var remain_args = tmp[1];
 
-    if (args.length == 0){ // No args mean only tag here, so the single quote sholud in the outer of tag
-      var speical = ''
+    var result = Nd_result(args);
+
+    var special = '';
+    if (remain_args) {
       if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
-        speical += remain_args[remain_args.length-1];
+        special += remain_args[remain_args.length-1];
         remain_args = remain_args.slice(0, -1);
       }
-      return '‘' + remain_args + '’' + speical;
+    }
+    else {
+      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += result[result.length-1];
+        result = result.slice(0, -1);
+      }
     }
 
-    var result = Nd_result(args);
-    var speical = ''
-    if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
-      speical += result[result.length-1];
-      result = result.slice(0, -1);
-    }
-
-    return '‘' + result + '’' + speical + remain_args;
+    return '‘' + result + remain_args + '’' + special;
   },
 
   /**
@@ -1959,8 +2095,12 @@ macros.doc = {
    *
    */
   Pf: function (args) {
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
     args = this.parseArguments(args);
-    return args.shift() + args.shift() + ' ' + args.join(' ');
+    var remain_args = tmp[1];
+
+    return args.shift() + args.shift() + ' ' + args.join(' ') + remain_args;
   },
 
   Ns: function (args) {
@@ -2004,38 +2144,21 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Fl: function (args) { // space 
-    var result = '';
+  Fl: function (args) {
     var tmp = this.splitHTMLString(args);
     args = tmp[0];
     args = this.parseArguments(args);
     var remain_args = tmp[1];
     
-    var flag = -1;
+    var result = '';
     if (args.length == 0) 
-      result += '<code class="Fl">' + '-' + '</code>';
+      result = '<code class="Fl">' + '-' + '</code>';
     else if (args.length == 1)
-      result += '<code class="Fl">' + '-' + args[0] + '</code>';
+      result = '<code class="Fl">' + '-' + args[0] + '</code>';
     else {
-      for (var i = 0 ;i < args.length; i++){
-        var vlaue = args[i];
-        if (specialCharacter.hasOwnProperty(vlaue))
-          if (vlaue == '|') {
-            result += ' ' + specialCharacter[vlaue];
-          }
-          else {
-            result += specialCharacter[vlaue];
-          }
-        else if (i != 0) {
-          flag = 1;
-          result += ' <code class="Fl">' + '-' + vlaue + '</code>';
-        }
-        else {
-          flag = 1;
-          result += '<code class="Fl">' + '-' + vlaue + '</code>';
-        }
-      }
+      result = Fl_result(args);
     }
+
     if (this.startsWithHTMLTag(remain_args, 'ns') && result[result.length-1] == ' ') { // Handle Ns macro
       result = result.slice(0, -1);
     }
@@ -2060,9 +2183,15 @@ macros.doc = {
    *
    */
   Cm: function (args) {
-    args = args.replace(/Actual_a_/g, '');
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
     args = this.parseArguments(args);
-    return '<code class="Cm">' + args.shift() + '</code>' + args.join(' ');
+    var remain_args = tmp[1];
+
+    
+    var result = Ar_result(args, 'code', 'Cm');
+    return result + remain_args;
+    // return '<code class="Cm">' + args.shift() + '</code>' + args.join(' ');
   },
 
   /**
@@ -2108,7 +2237,28 @@ macros.doc = {
    *
    */
   Op: function (args) {
-    return '[' + args + ']';
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Nd_result(args);
+
+    var special = '';
+    if (remain_args) {
+      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += remain_args[remain_args.length-1];
+        remain_args = remain_args.slice(0, -1);
+      }
+    }
+    else {
+      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += result[result.length-1];
+        result = result.slice(0, -1);
+      }
+    }
+
+    return '[' + result + remain_args + ']' + special;
   },
 
   /**
@@ -2124,7 +2274,14 @@ macros.doc = {
       return '[';
     }
     else {
-      return '[' + args;
+      var tmp = this.splitHTMLString(args);
+      args = tmp[0];
+      args = this.parseArguments(args);
+      var remain_args = tmp[1];
+  
+      var result = Nd_result(args);
+  
+      return '[' + result + ' ' + remain_args;
     }
   },
 
@@ -2147,7 +2304,6 @@ macros.doc = {
     var remain_args = tmp[1];
 
     var result = Nd_result(args);
-    console.log('Ic_result', result);
 
     return '<code class="Ic">' + result + '</code>' + ' ' + remain_args;
   },
@@ -2164,8 +2320,14 @@ macros.doc = {
    *
    */
   Ev: function (args) {
-    args = this.parseArguments(args)
-    return '<code class="Ev">' + args.shift() + '</code>' + args.join(' ');
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Nd_result(args);
+
+    return '<code class="Ev">' + result + '</code>' + ' ' + remain_args;
   },
 
   /**
@@ -2188,46 +2350,6 @@ macros.doc = {
     var remain_args = tmp[1];
 
     var result = Ar_result(args, 'span', 'Pa');
-    // var result = '';
-    // var flag = -1;
-    // for (var i = 0; i < args.length; i++){
-    //   var value = args[i];
-      
-    //   if (specialCharacter.hasOwnProperty(value)){
-    //     var tag_value = specialCharacter[value]
-
-    //     if (flag == 1) {
-    //       if (tag_value == '(')
-    //         tag_value = ' ' + tag_value;
-
-    //       result += '</span>' + tag_value;
-    //       flag = 0;
-    //     }
-    //     else {
-    //       result += tag_value;
-    //     }
-    //   } else{
-    //     if (flag == 0) {
-    //       result += ' ' + '<span class="Pa">' + value + ' ';
-    //       flag = 1;
-    //     }
-    //     else if (flag == -1) {
-    //       result += '<span class="Pa">' + value + ' ';
-    //       flag = 1;
-    //     }
-    //     else {
-    //       result = result + value + ' ';
-    //     }
-    //   }
-    // }
-
-    // if (flag == 1) {
-    //   result = result.slice(0, -1);
-    //   result += '</span>';
-    // }
-    
-    // result = result.replace(/Actual_a_/g, '');
-    // remain_args = remain_args.replace(/Actual_a_/g, '');
     return result + remain_args;
   },
 
@@ -2253,17 +2375,22 @@ macros.doc = {
     return '<code class="In">' + result + '</code>' + ' ' +  text.join(' ');
   },
 
-  Fd: function (text) {
+  Fd: function (text) { // Fd todo, 1. .Ev 1 2 Fd 3 4 . fd is not inline macro. 2. .Fd 1 , . Ar 123 .
     return '<code class="Fd">' + text + '</code>';
   },
 
-  Ft: function (name) {
-    return '<var class="Ft">' + name + '</var>';
+  Ft: function (args) {
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Nd_result(args);
+
+    return '<var class="Ft">' + result + '</var>' + ' ' + remain_args;
   },
 
   Fo: function (name) {
-    // this.buffer.functionArgs = [];
-    // this.buffer.functionName = '<strong>' + name.split(' ')[0] + '</strong>'; // Only get the first name
     this.buffer.InFoMacro = true;
     name = this.parseArguments(name)[0]; // Only care about first parameter
     var result = ''
@@ -2289,10 +2416,7 @@ macros.doc = {
    *
    */
   Fc: function () {
-    // var args = this.buffer.functionArgs.join(', '),
-    //   callParams = this.buffer.functionName + ' "' + args + '"';
     this.buffer.InFoMacro = false;
-    // return '<br>' + macros.doc.Fn.call(this, callParams);
     return ');';
   },
 
@@ -2375,6 +2499,8 @@ macros.doc = {
     else {
       result += '<var class="Fa">' + arg.replace(/"/g, '') + '</var>';
     }
+
+    result = result.replace(/Actual_a_/g, '');
     return result;
   },
 
@@ -2390,10 +2516,22 @@ macros.doc = {
    *
    */
   Vt: function (args) {
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Ar_result(args, 'var', 'Vt');
+
     if (this.isInsideOfSection('SYNOPSIS'))
-      return '<br><var class="Vt">' + args + '</var>';
+      return '<br>' + result + remain_args;
     else 
-      return '<var class="Vt">' + args + '</var>';
+      return result + remain_args;
+
+    // if (this.isInsideOfSection('SYNOPSIS'))
+    //   return '<br><var class="Vt">' + args + '</var>';
+    // else 
+    //   return '<var class="Vt">' + args + '</var>';
   },
 
   /**
@@ -2413,42 +2551,6 @@ macros.doc = {
     var remain_args = tmp[1];
 
     var result = Ar_result(args, 'var', 'Va');
-    // var result = '';
-    // var flag = 0
-    // for (var i = 0; i < args.length; i++){
-    //   var value = args[i];
-      
-    //   if (specialCharacter.hasOwnProperty(value)){
-    //     var tag_value = specialCharacter[value]
-
-    //     if (flag == 1) {
-    //       if (tag_value == '(')
-    //         tag_value = ' ' + tag_value;
-          
-    //       result = result.slice(0,-1) // close need remove space
-    //       result += '</var>' + tag_value;
-    //       flag = 0;
-    //     }
-    //     else {
-    //       result += tag_value;
-    //     }
-    //   } else{
-    //     if (flag == 0) {
-    //       result += '<var class="Va">' + value + ' ';
-    //       flag = 1;
-    //     }
-    //     else {
-    //       console.log('Before:'. result);
-    //       result = result + value + ' ';
-    //       console.log('After:'. result);
-    //     }
-    //   }
-    // }
-
-    // if (flag == 1){
-    //   result = result.slice(0, -1);
-    //   result += '</var>';
-    // }
     return result + remain_args;
   },
   
@@ -2464,11 +2566,25 @@ macros.doc = {
    *
    */
   Dv: function (args) {
-    return '<code class="Dv">' + args + '</code>';
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Nd_result(args);
+
+    return '<code class="Dv">' + result + '</code>' + ' ' + remain_args;
   },
 
   Er: function (args) {
-    return '<code class="Er">' + args + '</code>';
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Nd_result(args);
+
+    return '<code class="Er">' + result + '</code>' + ' ' + remain_args;
   },
 
   /**
@@ -2486,27 +2602,38 @@ macros.doc = {
    *
    */
   An: function (author) {
-    return '<span class="An">' + author + '</span>';
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Nd_result(args);
+
+    return '<span class="An">' + result + '</span>' + ' ' + remain_args;
   },
 
-  Lk: function (text) {
-    text = this.parseArguments(text);
-    if (text.length == 0)
-      return ' ';
-    else if(text.length == 1)
-      return '<a class="Lk" href="' + text[0] + '">' + text[0] + '</a>';
-    else
-      return '<a class="Lk" href="' + text.shift() + '">' + text.join(' ') + '</a>';
+  Lk: function (args) {
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    if (args.length == 0)
+      return remain_args;
+      
+    var link = args.shift();
+    var result = Nd_result(args);
+    return '<a class="Lk" href="' + link + '">' + result + '</a>' + ' ' + remain_args;
   },
 
-  Mt: function (text) {
-    text = this.parseArguments(text);
-    var result = '';
-    var t;
-    while(t = text.shift())
-      result += '<a class="Mt" href="' + t + '">' + t + '</a> ';
-    
-    return result;
+  Mt: function (args) {
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Mt_result(args);
+    return result + remain_args;
   },
 
   /**
@@ -2526,10 +2653,17 @@ macros.doc = {
    *
    */
   Cd: function (args) {
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Ar_result(args, 'code', 'Cd');
+
     if (this.isInsideOfSection('SYNOPSIS'))
-      return '<br><code class="Cd">' + args + '</code>';
+      return '<br>' + result + remain_args;
     else 
-      return '<code class="Cd">' + args + '</code>';
+      return result + remain_args;
   },
 
   /**
@@ -2544,11 +2678,23 @@ macros.doc = {
    *
    */
   Ad: function (args) {
-    return '<span class="Ad">' + args + '</span>';
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Ar_result(args, 'span', 'Ad');
+    return result + remain_args;
   },
 
   Ms: function (args) {
-    return '<span class="Ms">' + args + '</span>';
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Ar_result(args, 'span', 'Ms');
+    return result + remain_args;
   },
 
   /**
@@ -2562,12 +2708,14 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  Em: function (text) {
-    text = this.parseArguments(text);
-    if (text.length == 0)
-      return ' ';
-    else
-      return '<a class="permalink" href="#' + text[0] + '">' + '<i class="Em" id="' + text[0] + '">' + text.join(' ') + '</i></a>';
+  Em: function (args) {
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Em_result(args);
+    return result + remain_args;
   },
 
   /**
@@ -2582,16 +2730,23 @@ macros.doc = {
    *
    */
   Sy: function (args) {
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
     args = this.parseArguments(args);
-    if (args)
-      return '<b class="Sy">' + args.shift() + '</b>' + args.join(' ');
-    else
-      return ' ';
+    var remain_args = tmp[1];
+
+    var result = Sy_result(args);
+    return result + remain_args;
   },
 
   No: function (args) {
-    return '<span class="No">' + args + '</span>';
-  },
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Ar_result(args, 'span', 'No');
+    return result + remain_args;  },
 
   /**
    * Start the font mode until .Ef is reached, receives a font mode
@@ -2721,48 +2876,28 @@ macros.doc = {
    *
    */
   Qq: function (args) {
-    var result = '';
     var tmp = this.splitHTMLString(args);
     args = tmp[0];
     args = this.parseArguments(args);
     var remain_args = tmp[1];
 
-    var flag = 0
-    for (var i = 0; i < args.length; i++){
-      var value = args[i];
-      
-      if (specialCharacter.hasOwnProperty(value)){
-        var tag_value = specialCharacter[value]
+    var result = Nd_result(args);
 
-        if (flag == 1) {
-          if (tag_value == '(')
-            tag_value = ' ' + tag_value;
-          
-          result = result.slice(0,-1) // close need remove space
-          result += tag_value;
-          flag = 0;
-        }
-        else {
-          result += tag_value;
-        }
-      } else{
-        if (flag == 0 && i != 0)
-          result += ' ';
-        flag = 1;
-        result = result + value + ' ';
+    var special = '';
+    if (remain_args) {
+      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += remain_args[remain_args.length-1];
+        remain_args = remain_args.slice(0, -1);
+      }
+    }
+    else {
+      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += result[result.length-1];
+        result = result.slice(0, -1);
       }
     }
 
-    var speical = ''; //.Qq "exfxcxdxbxegedabagacad" ,
-    if (in_the_end.hasOwnProperty(result[result.length-1]) && remain_args == '') { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
-      speical += result[result.length-1];
-      result = result.slice(0, -1);
-    }
-    else if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
-      speical += remain_args[remain_args.length-1];
-      remain_args = remain_args.slice(0, -1);
-    }
-    return '"' + result + remain_args + '"' + speical;
+    return '"' + result + remain_args + '"' + special;
   },
 
   /**
@@ -2774,7 +2909,19 @@ macros.doc = {
    *
    */
   Qo: function (args) {
-    return '"' + args;
+    if (!args) {
+      return '"';
+    }
+    else {
+      var tmp = this.splitHTMLString(args);
+      args = tmp[0];
+      args = this.parseArguments(args);
+      var remain_args = tmp[1];
+  
+      var result = Nd_result(args);
+  
+      return '"' + result + ' ' + remain_args;
+    }
   },
 
   /**
@@ -2786,10 +2933,11 @@ macros.doc = {
    *
    */
   Qc: function (args) {
-    if (args)
-      return '"' + ' ' + args;
-    else
-      return '"';
+    return '"' + ' ' + args;
+    // if (args)
+    //   return '"' + ' ' + args;
+    // else
+    //   return '"';
   },
 
   /**
@@ -2801,12 +2949,34 @@ macros.doc = {
    *
    */
   Sq: function (args) {
-    var speical = ''
-    if (in_the_end.hasOwnProperty(args[args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
-      speical += args[args.length-1];
-      args = args.slice(0, -1);
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Nd_result(args);
+
+    var special = '';
+    if (remain_args) {
+      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += remain_args[remain_args.length-1];
+        remain_args = remain_args.slice(0, -1);
+      }
     }
-    return '‘' + args + '’' + speical;
+    else {
+      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += result[result.length-1];
+        result = result.slice(0, -1);
+      }
+    }
+
+    return '‘' + result + remain_args + '’' + special;
+    // var speical = ''
+    // if (in_the_end.hasOwnProperty(args[args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+    //   speical += args[args.length-1];
+    //   args = args.slice(0, -1);
+    // }
+    // return '‘' + args + '’' + speical;
   },
 
   /**
@@ -2818,7 +2988,19 @@ macros.doc = {
    *
    */
   So: function (args) {
-    return '\'' + args;
+    if (!args) {
+      return '‘';
+    }
+    else {
+      var tmp = this.splitHTMLString(args);
+      args = tmp[0];
+      args = this.parseArguments(args);
+      var remain_args = tmp[1];
+  
+      var result = Nd_result(args);
+  
+      return '‘' + result + ' ' + remain_args;
+    }
   },
 
   /**
@@ -2830,10 +3012,11 @@ macros.doc = {
    *
    */
   Sc: function (args) {
-    if (args)
-      return '\'' + ' ' + args;
-    else
-      return '\'';
+    return '’'  + ' ' + args;
+    // if (args)
+    //   return '\'' + ' ' + args;
+    // else
+    //   return '\'';
   },
 
   /**
@@ -2847,20 +3030,42 @@ macros.doc = {
   Pq: function (args) {
     var tmp = this.splitHTMLString(args);
     args = tmp[0];
-    // args = this.parseArguments(args);
+    args = this.parseArguments(args);
     var remain_args = tmp[1];
 
-    var speical = ''
-    if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before ')' should not be special text. Ex: .Pq Sq Pa \&. .
-      speical += remain_args[remain_args.length-1];
-      remain_args = remain_args.slice(0, -1);
+    var result = Nd_result(args);
+
+    var special = '';
+    if (remain_args) {
+      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += remain_args[remain_args.length-1];
+        remain_args = remain_args.slice(0, -1);
+      }
+    }
+    else {
+      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += result[result.length-1];
+        result = result.slice(0, -1);
+      }
     }
 
-    if (this.startsWithHTMLTag(remain_args, 'ns') && args[args.length-1] == ' ') // Handle Ns macro
-      args = args.slice(0, -1);
+    return '(' + result + remain_args + ')' + special;
+    // var tmp = this.splitHTMLString(args);
+    // args = tmp[0];
+    // // args = this.parseArguments(args);
+    // var remain_args = tmp[1];
 
-    args = args.replace(/Actual_a_/g, '');
-    return '(' + args + remain_args + ')' + speical ;
+    // var speical = ''
+    // if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before ')' should not be special text. Ex: .Pq Sq Pa \&. .
+    //   speical += remain_args[remain_args.length-1];
+    //   remain_args = remain_args.slice(0, -1);
+    // }
+
+    // if (this.startsWithHTMLTag(remain_args, 'ns') && args[args.length-1] == ' ') // Handle Ns macro
+    //   args = args.slice(0, -1);
+
+    // args = args.replace(/Actual_a_/g, '');
+    // return '(' + args + remain_args + ')' + speical ;
   },
 
   /**
@@ -2872,7 +3077,19 @@ macros.doc = {
    *
    */
   Po: function (args) {
-    return '(' + args;
+    if (!args) {
+      return '(';
+    }
+    else {
+      var tmp = this.splitHTMLString(args);
+      args = tmp[0];
+      args = this.parseArguments(args);
+      var remain_args = tmp[1];
+  
+      var result = Nd_result(args);
+  
+      return '(' + result + ' ' + remain_args;
+    }
   },
 
   /**
@@ -2884,10 +3101,11 @@ macros.doc = {
    *
    */
   Pc: function (args) {
-    if (args)
-      return ')' + ' ' + args;
-    else
-      return ')';
+    return ')'  + ' ' + args;
+    // if (args)
+    //   return ')' + ' ' + args;
+    // else
+    //   return ')';
   },
 
   /**
@@ -2901,7 +3119,29 @@ macros.doc = {
    *
    */
   Bq: function (args) {
-    return '[' + args + ']';
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Nd_result(args);
+
+    var special = '';
+    if (remain_args) {
+      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += remain_args[remain_args.length-1];
+        remain_args = remain_args.slice(0, -1);
+      }
+    }
+    else {
+      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += result[result.length-1];
+        result = result.slice(0, -1);
+      }
+    }
+
+    return '[' + result + remain_args + ']' + special;
+    // return '[' + args + ']';
   },
 
   /**
@@ -2913,7 +3153,20 @@ macros.doc = {
    *
    */
   Bo: function (args) {
-    return '[' + args;
+    if (!args) {
+      return '[';
+    }
+    else {
+      var tmp = this.splitHTMLString(args);
+      args = tmp[0];
+      args = this.parseArguments(args);
+      var remain_args = tmp[1];
+  
+      var result = Nd_result(args);
+  
+      return '[' + result + ' ' + remain_args;
+    }
+    // return '[' + args;
   },
 
   /**
@@ -2925,10 +3178,11 @@ macros.doc = {
    *
    */
   Bc: function (args) {
-    if (args)
-      return ']' + ' ' + args;
-    else
-      return ']';
+    return ']'  + ' ' + args;
+    // if (args)
+    //   return ']' + ' ' + args;
+    // else
+    //   return ']';
   },
 
   /**
@@ -2942,7 +3196,28 @@ macros.doc = {
    *
    */
   Brq: function (args) {
-    return '{' + args + '}';
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Nd_result(args);
+
+    var special = '';
+    if (remain_args) {
+      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += remain_args[remain_args.length-1];
+        remain_args = remain_args.slice(0, -1);
+      }
+    }
+    else {
+      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += result[result.length-1];
+        result = result.slice(0, -1);
+      }
+    }
+
+    return '{' + result + remain_args + '}' + special;
   },
 
   /**
@@ -2954,7 +3229,19 @@ macros.doc = {
    *
    */
   Bro: function (args) {
-    return '{' + args;
+    if (!args) {
+      return '{';
+    }
+    else {
+      var tmp = this.splitHTMLString(args);
+      args = tmp[0];
+      args = this.parseArguments(args);
+      var remain_args = tmp[1];
+  
+      var result = Nd_result(args);
+  
+      return '{' + result + ' ' + remain_args;
+    }
   },
 
   /**
@@ -2966,10 +3253,7 @@ macros.doc = {
    *
    */
   Brc: function (args) {
-    if (args)
-      return '}' + ' ' + args;
-    else
-      return '}';
+    return '}'  + ' ' + args;
   },
 
   /**
@@ -2983,7 +3267,28 @@ macros.doc = {
    *
    */
   Aq: function (args) {
-    return '⟨' + args + '⟩';
+    var tmp = this.splitHTMLString(args);
+    args = tmp[0];
+    args = this.parseArguments(args);
+    var remain_args = tmp[1];
+
+    var result = Nd_result(args);
+
+    var special = '';
+    if (remain_args) {
+      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += remain_args[remain_args.length-1];
+        remain_args = remain_args.slice(0, -1);
+      }
+    }
+    else {
+      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+        special += result[result.length-1];
+        result = result.slice(0, -1);
+      }
+    }
+
+    return '⟨' + result + remain_args + '⟩' + special;
   },
 
   /**
@@ -2995,14 +3300,19 @@ macros.doc = {
    *
    */
   Ao: function (args) {
-    var result = '';
-    var tmp = this.splitHTMLString(args)
-    args = tmp[0];
-    var remain_args = tmp[1];
-
-    if (args[args.length-1] == '⟩' && args[args.length-2] == ' ') // Ao Ac macro will generate a redundant space befor )
-      args = args.slice(0, -2) + '⟩';
-    return '⟨' + args + remain_args;
+    if (!args) {
+      return '⟨';
+    }
+    else {
+      var tmp = this.splitHTMLString(args);
+      args = tmp[0];
+      args = this.parseArguments(args);
+      var remain_args = tmp[1];
+  
+      var result = Nd_result(args);
+  
+      return '⟨' + result + ' ' + remain_args;
+    }
   },
 
   /**
@@ -3014,10 +3324,7 @@ macros.doc = {
    *
    */
   Ac: function (args) {
-    if (args)
-      return '⟩' + args;
-    else
-      return '⟩';
+    return '⟩'  + ' ' + args;
   },
 
   /**
@@ -3562,10 +3869,8 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) { // re
 
 
     if (node.kind == 7) { // Escape character
-      console.log('Escape', node.value);
      
       args = node.nodes.length ? this.recurse(node.nodes, layer+1) : ''; // Get argument begind the macro now
-      console.log('Escape args', args);
       if (node.value == '\\&') {
         this.buffer.meetEscape = true;
         result = result.slice(0, -1); // The \\& will generate a space sholud be ignore in the before string
