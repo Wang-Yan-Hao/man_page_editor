@@ -12,7 +12,10 @@ function patch_download() {
    var editor = ace.edit("editor"); // Set editor to id="editor" tag in html
    let editor_content = editor.getValue();  // Editor content
 
-   var diff = Diff.createTwoFilesPatch(window.current_link_1, window.current_link_2, window.origin_content, editor_content ); // use jsdiff create diff file string
+   const a = window.current_link_1.substring(9); // Remove /usr/src/
+   const b = window.current_link_2.substring(9); // Remove /usr/src/
+
+   var diff = Diff.createTwoFilesPatch(a, b, window.origin_content, editor_content ); // use jsdiff create diff file string
    download("diff.patch", diff);
 }
 
