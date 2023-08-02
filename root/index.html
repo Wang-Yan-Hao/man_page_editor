@@ -53,10 +53,13 @@
    </div>
 
    <div class="editor-container">
-      <div class="left">
+      <div id="left">
          <div id="editor"></div>
       </div>
-      <div class="right">
+
+      <div id="dragLine" onmousedown="startDrag(event)" onmousemove="drag(event)"></div>
+
+      <div id="right">
          <iframe id="output"></iframe>
       </div>
    </div>

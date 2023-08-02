@@ -12,18 +12,6 @@ a:hover {
    align-items: center;
 }
 
-.title-container > a > img  {
-   width: 20px;
-}
-
-.title-container > a {
-   margin-right: 23px;
-}
-
-a#help_button {
-   margin-right: 10px;
-}
-
 h1.title {
    font-family: "Roboto", sans-serif;  
    color: rgb(244, 242, 242); 
@@ -32,8 +20,17 @@ h1.title {
    display: inline;
 }
 
-.prompttest {
-   margin-right: auto;
+.title-container > a {
+   margin-right: 23px;
+   margin-bottom: 3px;
+}
+
+a#help_button {
+   margin-right: 10px;
+}
+
+.title-container > a > img  {
+   width: 20px;
 }
 
 .input1_txt {
@@ -47,6 +44,7 @@ h1.title {
    font-size: 14px;
    display: inline;
 }
+
 #input1, #selectMenu {
    margin-left: 5px;
 }
@@ -57,10 +55,6 @@ h1.title {
 
 a.search {
    margin-left: 4px;
-}
-
-.title-container > a {
-   margin-bottom: 3px;
 }
 
 #selectMenu, #input1 {
@@ -79,26 +73,27 @@ a.search {
  #selectMenu > option, #input1 {
    background-color: #ffffff;
    font-family: "Roboto", sans-serif;  
-
  }
 
 .editor-container {
-   height: 800px;
+   height: 850px;
    margin: auto;
    position: relative;
    display: flex;
    flex-direction: row;
+}
 
+#left, #right {
+   height: 100%;
+   width: 50%;
 }
 
 #editor {
-   position: absolute;
    left: 0;
    right: 0;
    top: 0;
    bottom: 0;
    height: 100%;
-   width: 50%;
    font-size: 15px;
 }
 
@@ -108,26 +103,20 @@ a.search {
    top: 0;
    bottom: 0;
    height: 100%;
-   width: 100%;
    font-size: 20px;
+   width: 100%;
+   /* pointer-events: none; https://stackoverflow.com/questions/5261328/receive-mousemove-events-from-iframe-too */
 }
 
-.left {
-   width: 50%;
+#dragLine {
+   width: 7px;
    height: 100%;
-}
-
-.right {
-   width: 50%;
-   height: 100%;
+   background-color: #ccc;
+   cursor: ew-resize;
 }
 
 .footer {
    margin: 5px auto;
-}
-
-.footer {
-   padding-top: 4px;
 }
 
 .footer p,a {
