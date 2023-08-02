@@ -1,3 +1,4 @@
 1.  To get the man page file content, we use the root/other/man_page_map.json to get the path of the file then get the content by http request to Github.But there is some files which has duplicate path.
     For example: EVP_md5.3 has two path, "/usr/src/secure/lib/libcrypto/man/man3/EVP_md5.3" and "/usr/src/crypto/heimdal/doc/doxyout/hcrypto/man/man3/EVP_md5.3". We don't know what is the true path of 
     these file.
+2. This mdoc online editor uses Jroff (https://github.com/Wang-Yan-Hao/jroff) revised by me. It may still have rendering problems. If it has any rendering issues, please contact me via a GitHub issue (https://github.com/Wang-Yan-Hao/man_page_editor/issues).
