@@ -11,7 +11,7 @@ rawFile.onreadystatechange = function() {
     editor.setValue(allText)
   }
 }
-rawFile.open("GET", "scripts/temp.txt", true);
+rawFile.open("GET", "scripts/init.txt", true);
 rawFile.send();
 
 let configFile = "";

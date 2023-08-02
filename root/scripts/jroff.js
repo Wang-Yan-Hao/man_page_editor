@@ -3742,7 +3742,7 @@ HTMLGenerator.prototype.generate = function (source, lib) { // lib parameter is 
   ast = parser.buildAST();
   // lib = lib || 'doc';
   lib = 'doc'; // Only set to 'doc' macro, this is also our only macro (FreeBSD mdoc)
-  console.log(ast)
+  // console.log(ast)
   this.macros = mergeObjects([macros.defaults, macros[lib]]);
 
   /* Global variable, used to define if a token is imacro */
@@ -3898,7 +3898,7 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) { // re
     else { // Common Macro
       func = this.macros[node.value] || this.undefMacro; // Get the macro parsing 
       args = node.nodes.length ? this.recurse(node.nodes, layer+1) : ''; // Get argument begind the macro now
-      console.log('Macro:', node.value, 'Args:', args);
+      // console.log('Macro:', node.value, 'Args:', args);
       result += func.call(this, args, node) || '';
     }
   } else { // Text
@@ -3919,7 +3919,7 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) { // re
 
     result += node.value; // If not macro, clean the " character, not use now
   }
-  console.log('Result: ',result)
+  // console.log('Result: ',result)
   return result;
 };
 
