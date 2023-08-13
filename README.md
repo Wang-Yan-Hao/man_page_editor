@@ -1,7 +1,13 @@
 # FreeBSD online man page editor
-An online man page editor for FreeBSD man page. Only front-end with HTML, CSS and JS in this editor. Using [Jroff](https://github.com/Wang-Yan-Hao/jroff) (I fork with extend to support mdoc) to render mdoc.
+An online man page editor for the FreeBSD man page. Only front-end with HTML, CSS, and JS in this editor. Using [Jroff](https://github.com/Wang-Yan-Hao/jroff) (I fork with extend to support mdoc) to render mdoc.
 
-Online website location: [website](https://wang-yan-hao.github.io/man_page_editor/root/)
+[Online website](https://wang-yan-hao.github.io/man_page_editor/root/)
+
+## Directory
+* root: website file.
+* man_page_editor: code to update the map.json in root/other/.
+* root/styles/jroff/: CSS from freebsd-doc [mandoc](https://github.com/freebsd/freebsd-src/blob/main/contrib/mandoc/mandoc.css).
+* root/scripts/jroff.js: main render file.
 
 ## Open in the local server
 There are three ways to open the website on the local server that can help you develop. When you change the code, you can see the change on the local server immediately.
