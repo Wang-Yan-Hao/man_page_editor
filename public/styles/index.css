@@ -4,6 +4,11 @@ a:hover {
    /* Add any other hover styles you want */
  }
 
+.title-container > a > i {
+	color: white;
+	font-size: 18px;
+}
+
 .title-container {
    background-color: rgb(64, 62, 62);
    padding: 8px 12px;
@@ -27,10 +32,6 @@ h1.title {
 
 a#help_button {
    margin-right: 10px;
-}
-
-.title-container > a > img  {
-   width: 20px;
 }
 
 .input1_txt {
