@@ -5,15 +5,14 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"build": "webpack --config webpack.config.js",
-		"lint": "eslint 'src/**/*.js' --ignore-pattern 'src/lib/**/*.js'",
-		"lint-fix": "eslint -- fix 'src/**/*.js' --ignore-pattern 'src/lib/**/*.js'",
-		"format": "prettier --write 'public/**/*.css' '!public/styles/doc_css/**/*.css' 'public/**/*.html'",
-		"check-format": "prettier --check 'public/**/*.css' '!public/styles/doc_css/**/*.css' 'public/**/*.html'"
+		"lint": "eslint 'src/**/*.js' --ignore-pattern 'src/scripts/jroff.js'",
+		"lint-fix": "eslint -- fix 'src/**/*.js' --ignore-pattern 'src/scripts/jroff.js'",
+		"format": "prettier --write 'public/**/*.css' '!public/styles/jroff/*.css' 'public/**/*.html'",
+		"check-format": "prettier --check 'public/**/*.css' '!public/styles/jroff/*.css' 'public/**/*.html'"
 	},
 	"author": "",
 	"license": "ISC",
-	"dependencies": {
-	},
+	"dependencies": {},
 	"description": "",
 	"devDependencies": {
 		"copy-webpack-plugin": "^11.0.0",
