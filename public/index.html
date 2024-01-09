@@ -5,8 +5,13 @@
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>FreeBSD Online Man Page Editor</title>
-
-   <link rel="stylesheet" href="styles/reset.css">
+   <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css"
+      integrity="sha512-NmLkDIU1C/C88wi324HBc+S2kLhi08PN5GDeUVVVC/BVt/9Izdsc9SVeVfA1UZbY3sHUlDSyRXhCzHfr6hmPPw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+   />
    <link rel="stylesheet" href="styles/index.css">
 	<link
 		rel="stylesheet"
@@ -18,14 +23,14 @@
 </head>
 
 <body>
-   <div class="title-container">
-      <h1 class="title">FreeBSD Online Man Page Editor</h1>
+   <div class="header-container">
+      <h1 id="header">FreeBSD Online Man Page Editor</h1>
 
-      <label class="input1_txt">Content:</label>
-      <input type="text" id="input1"><br>
+      <label id="input-text">Content:</label>
+      <input type="text" id="input"><br>
 
-      <label class="selectMenu_txt">Section:</label>
-      <select id="selectMenu">
+      <label id="select-menu-text">Section:</label>
+      <select id="select-menu">
          <option value="option0">All Sections</option>
          <option value="option1">1 - General Commands</option>
          <option value="option2">2 - System Calls</option>
@@ -39,40 +44,40 @@
          <option value="optionn">n - New Commands</option>
       </select>
 
-      <a title="Search" onclick="search_content()" class="search">
+      <a title="Search" id="search" onclick="search_content()">
          <i class="fa-solid fa-magnifying-glass"></i>
       </a>
-      <a title="Generate Content" onclick="generate_content()">
+      <a title="Generate Content" id="generate-content" onclick="generate_content()">
          <i class="fa-solid fa-code"></i>
       </a>
-      <a title="Save Content" onclick="store_content()">
+      <a title="Save Content" id="save-content" onclick="store_content()">
          <i class="fa-solid fa-floppy-disk"></i>
       </a>
-      <a title="Download patch"onclick="patch_download()">
+      <a title="Download patch" id="download-patch" onclick="patch_download()">
          <i class="fa-solid fa-download"></i>
       </a>
-      <a title="FreeBSD Bugzilla" onclick="window.open('https://bugs.freebsd.org/bugzilla/','_blank')">
+      <a title="FreeBSD Bugzilla" id="freebsd-bugzilla" onclick="window.open('https://bugs.freebsd.org/bugzilla/','_blank')">
          <i class="fa-solid fa-globe"></i>
       </a>
-      <a title="Help" id="help_button" href="pages/help.html" target="_blank">
+      <a title="Help" id="help" href="pages/help.html" target="_blank">
          <i class="fa-regular fa-circle-question"></i>
       </a>
    </div>
 
    <div class="editor-container">
-      <div id="left">
+      <div id="editor-container-left">
          <div id="editor"></div>
       </div>
 
-      <div id="dragLine" onmousedown="startDrag(event)" onmousemove="drag(event)"></div>
+      <div id="dragline" onmousedown="startDrag(event)" onmousemove="drag(event)"></div>
 
-      <div id="right">
+      <div id="editor-container-right">
          <iframe id="output"></iframe>
       </div>
    </div>
 
-   <div class="footer">
-      <p>This mdoc online editor uses <a href="https://github.com/Wang-Yan-Hao/jroff">Jroff</a> revised by me.
+   <div class="footer-container">
+      <p>This mdoc online editor uses <a href="https://github.com/Wang-Yan-Hao/man_page_editor">Jroff</a> revised by me.
          It may still have rendering problems. If it has any rendering issues, please contact me via a GitHub <a href="https://github.com/Wang-Yan-Hao/man_page_editor/issues">issue</a>.</p>
       <p>Made with ♥ by the FreeBSD Community</p>
    </div>

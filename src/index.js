@@ -11,6 +11,7 @@ rawFile.onreadystatechange = function() {
     editor.setValue(allText)
   }
 }
+
 rawFile.open("GET", "scripts/init.txt", true);
 rawFile.send();
 
@@ -73,8 +74,8 @@ function github_get(url){
 
 // Search buttion function
 function search_content() {
-  var input1 = document.getElementById("input1").value;
-  var selectOption = document.getElementById("selectMenu").value;
+  var input1 = document.getElementById("input").value;
+  var selectOption = document.getElementById("select-menu").value;
   var github_raw_url = configFile["github_url"]
   var search_key = input1 + '.' +  selectOption.charAt(selectOption.length - 1); // Search key, ex man.1
 
@@ -119,4 +120,3 @@ function generate_content() {
                                                 + '<link rel="stylesheet" href="styles/jroff/fix.css">'
                                                 + result
 }
-
