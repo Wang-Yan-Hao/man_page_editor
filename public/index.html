@@ -44,27 +44,19 @@
 				<option value="optionn">n - New Commands</option>
 			</select>
 
-			<a title="Search" id="search" onclick="search_content()">
+			<a title="Search" id="search">
 				<i class="fa-solid fa-magnifying-glass"></i>
 			</a>
-			<a
-				title="Generate Content"
-				id="generate-content"
-				onclick="generate_content()"
-			>
+			<a title="Generate Content" id="generate-content">
 				<i class="fa-solid fa-code"></i>
 			</a>
-			<a title="Save Content" id="save-content" onclick="store_content()">
+			<a title="Save Content" id="save-content">
 				<i class="fa-solid fa-floppy-disk"></i>
 			</a>
-			<a title="Download patch" id="download-patch" onclick="patch_download()">
+			<a title="Download patch" id="download-patch">
 				<i class="fa-solid fa-download"></i>
 			</a>
-			<a
-				title="FreeBSD Bugzilla"
-				id="freebsd-bugzilla"
-				onclick="window.open('https://bugs.freebsd.org/bugzilla/','_blank')"
-			>
+			<a title="FreeBSD Bugzilla" id="freebsd-bugzilla">
 				<i class="fa-solid fa-globe"></i>
 			</a>
 			<a title="Help" id="help" href="pages/help.html" target="_blank">
@@ -77,11 +69,7 @@
 				<div id="editor"></div>
 			</div>
 
-			<div
-				id="dragline"
-				onmousedown="startDrag(event)"
-				onmousemove="drag(event)"
-			></div>
+			<div id="dragline"></div>
 
 			<div id="editor-container-right">
 				<iframe id="output"></iframe>
@@ -101,24 +89,17 @@
 			<p>Made with ♥ by the FreeBSD Community</p>
 		</div>
 
-		<!-- include ace.js by CDN -->
 		<script
 			src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.11.2/ace.js"
 			integrity="sha512-AhCq6G80Ge/e6Pl3QTNGI2Je+6ixVVDmmE4Nui8/dHRBKxMUvjJxn6CYEcMQdTSxHreC3USOxTDrvUPLtN5J7w=="
 			crossorigin="anonymous"
 			referrerpolicy="no-referrer"
 		></script>
-		<!-- include diff.js by CDN -->
 		<script
 			src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js"
 			integrity="sha512-vco9RAxEuv4PQ+iTQyuKElwoUOcsVdp+WgU6Lgo82ASpDfF7vI66LlWz+CZc2lMdn52tjjLOuHvy8BQJFp8a1A=="
 			crossorigin="anonymous"
 			referrerpolicy="no-referrer"
 		></script>
-
-		<script src="scripts/jroff.js"></script>
-		<script src="scripts/index.js"></script>
-		<script src="scripts/other.js"></script>
-		<script src="scripts/patch_download.js"></script>
 	</body>
 </html>

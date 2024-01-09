@@ -1,122 +1,55 @@
-// Ace editor setting
-var editor = ace.edit("editor"); // Set editor to id="editor" tag in html
-editor.setOption("wrap", "free"); // Long lines will automatically wrap to the next line when they reach the edge of the editor, without inserting line breaks or truncating the content.
-editor.session.setMode("ace/mode/text"); // Set editor syntax to asciidoc
+import { patchDownload, storeContent } from './scripts/download.js'
+import { startDrag, drag, stopDrag } from './scripts/middle_line.js'
+import { generateContent } from './scripts/editor.js'
+import { searchContent } from './scripts/search.js'
 
-// Config file
-var rawFile = new XMLHttpRequest();
-rawFile.onreadystatechange = function() {
-  if (rawFile.readyState === 4) {
-    var allText = rawFile.responseText;
-    editor.setValue(allText)
-  }
-}
+// Add attribute to html
+const dragLine = document.getElementById('dragline')
+dragLine.addEventListener('mousedown', startDrag)
+document.addEventListener('mousemove', drag)
+document.addEventListener('mouseup', stopDrag)
 
-rawFile.open("GET", "scripts/init.txt", true);
-rawFile.send();
+const generateHtmlTag = document.getElementById('generate-content')
+generateHtmlTag.addEventListener('click', generateContent)
 
-let configFile = "";
-// Get the config data
-async function fetchConfig() {
-  try {
-    const response = await fetch('config.json');
-    const data = await response.json();
-    configFile = data;
-  } catch (error) {
-    console.error(error);
-  }
-}
-fetchConfig();
+const storeContentTag = document.getElementById('save-content')
+storeContentTag.addEventListener('click', storeContent)
 
-// Get the man_page_map.json as variable
-// man_page_map.json is a map of (man page file name, path of man page file name)
-let json_map = ""
-fetch('other/man_page_map.json')
-  .then(response => response.json())
-  .then(data => {
-    json_map = data
-  })
-  .catch(error => console.error(error));
+const patchDownloadTag = document.getElementById('download-patch')
+patchDownloadTag.addEventListener('click', patchDownload)
 
-// Function to search man_page_map.json
-function searchKey(jsonObj, key) {
-  let result = null;
-  for (const prop in jsonObj) {
-    if (prop === key) {
-      return jsonObj[prop];
-    } else if (typeof jsonObj[prop] === 'object') {
-      result = searchKey(jsonObj[prop], key);
-      if (result !== null) {
-        return result;
-      }
-    }
-  }
-  return result;
-}
+const freebsdBugzillaTag = document.getElementById('freebsd-bugzilla')
+freebsdBugzillaTag.addEventListener('click', function () {
+	window.open('https://bugs.freebsd.org/bugzilla/', '_blank')
+})
 
-// Give github url to get man page source code
-function github_get(url){
-  var request = new XMLHttpRequest();
-  request.open("GET", url, false);
-  request.send(null)
-  if (request.status === 200) {
-    // Success - handle the response
-    response_text = request.responseText
-    editor.setValue("") // Clean content
-    editor.session.insert(editor.getCursorPosition(), request.responseText); // Insert content that get from url to left editor session
-    window.origin_content = response_text; // Use global window to store content     
-  } 
-  else {
-     // Error - handle the error condition
-     alert("Error occurred. Status: " + request.status + "\nYou enter wrong url.");
-  }
-}
+const searchTag = document.getElementById('search')
+searchTag.addEventListener('click', searchContent)
 
-// Search buttion function
-function search_content() {
-  var input1 = document.getElementById("input").value;
-  var selectOption = document.getElementById("select-menu").value;
-  var github_raw_url = configFile["github_url"]
-  var search_key = input1 + '.' +  selectOption.charAt(selectOption.length - 1); // Search key, ex man.1
+// Display confirmation message when closing the page
+window.addEventListener('beforeunload', function (e) {
+	const confirmationMessage =
+		'Your content may not be stored. Are you sure you want to leave this page?'
+	// Some browsers require the confirmation message to be set
+	e.returnValue = confirmationMessage
+	return confirmationMessage
+})
 
-  if (selectOption == "option0") {
-    for (i = 1; i < 10; i++) {
-      var search_key = input1 + '.' +  i.toString();
-      const result = searchKey(json_map, search_key);
-      if (result !== null) {
-        github_raw_url = github_raw_url + result.substr(9, result.length); // Remove "/usr/src" string
-        github_get(github_raw_url)
+// While edit content after 1 second right sesstion will rerender. To prevent too many function calls
+let debounceTimeoutId = null
 
-        window.current_link_1 = 'a' + result;
-        window.current_link_2 = 'b' + result;
-        return;
-      }
-    }
-  }
-  else if (selectOption == "optionn") { // option n
-  }
-  else {
-    const result = searchKey(json_map, search_key);
-    if (result !== null) {
-      github_raw_url = github_raw_url + result.substr(9, result.length);
-      github_get(github_raw_url)   
+const observer = new MutationObserver(function (mutationsList, observer) {
+	// Use debounce technique to ensure the function will be called at most once in one second
+	if (debounceTimeoutId) {
+		clearTimeout(debounceTimeoutId)
+	}
+	debounceTimeoutId = setTimeout(() => {
+		// Trigger your function here
+		generateContent()
+	}, 1000)
+})
 
-      window.current_link_1 = 'a' + result;
-      window.current_link_2 = 'b' + result;
-      return;
-    }
-  }
-  // If map has not find the search_key, output warning message
-  window.alert("Search no result")
-}
-
-var output_session = document.querySelector("#output"); // output session set to id="output" tag in html
-// Generated content
-function generate_content() {
-  let editor_content = editor.getValue();  // Editor content
-  var generator = new Jroff.HTMLGenerator();
-  var result = generator.generate(editor_content, 'doc');
-  output_session.contentDocument.body.innerHTML = '<link rel="stylesheet" href="styles/jroff/mandoc.css">'
-                                                + '<link rel="stylesheet" href="styles/jroff/fix.css">'
-                                                + result
-}
+observer.observe(document.getElementById('editor'), {
+	childList: true,
+	subtree: true,
+})
