@@ -1,5 +1,5 @@
 a:hover {
-   cursor: pointer;
+	cursor: pointer;
 }
 
 .header-container {
@@ -28,67 +28,68 @@ a:hover {
 	font-family: 'Roboto', sans-serif;
 }
 
-#input-text, #select-menu-text {
-   color: rgb(244, 242, 242);
-	font-family: 'Roboto', sans-serif;
-   font-weight: 600;
+#input-text,
+#select-menu-text {
+	margin-left: auto;
+	color: rgb(244, 242, 242);
+	font-weight: 600;
 	font-size: 14px;
-   margin-left: auto;
+	font-family: 'Roboto', sans-serif;
 }
 
 #select-menu-text {
-   color: rgb(244, 242, 242);
-	font-family: 'Roboto', sans-serif;
-   font-weight: 600;
+	margin-left: 10px;
+	color: rgb(244, 242, 242);
+	font-weight: 600;
 	font-size: 14px;
-   margin-left: 10px;
+	font-family: 'Roboto', sans-serif;
 }
 
-#input, #select-menu {
-   margin-left: 5px;
-   appearance: none;
-   -webkit-appearance: none;
-   -moz-appearance: none;
-   background-color: #f1f1f1;
-   padding: 2px 4px;
-   border: 1px solid #ccc;
-   border-radius: 4px;
-   font-size: 12px;
-   color: #333;
-   cursor: pointer;
+#input,
+#select-menu {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	cursor: pointer;
+	margin-left: 5px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	background-color: #f1f1f1;
+	padding: 2px 4px;
+	color: #333;
+	font-size: 12px;
 }
 
 #select-menu > option {
-   background-color: #ffffff;
-   font-family: "Roboto", sans-serif; 
+	background-color: #ffffff;
+	font-family: 'Roboto', sans-serif;
 }
 
 #search {
-   margin-left: 20px;
+	margin-left: 20px;
 }
 
 .editor-container {
-   height: 850px;
-   margin: auto;
-   position: relative;
-   display: flex;
-   flex-direction: row;
+	display: flex;
+	position: relative;
+	flex-direction: row;
+	margin: auto;
+	height: 850px;
 }
 
 #editor-container-left,
 #editor-container-right {
-   height: 100%;
-   width: 50%;
-
+	width: 50%;
+	height: 100%;
 }
 
 #editor {
-   left: 0;
-   right: 0;
-   top: 0;
-   bottom: 0;
-   height: 100%;
-   font-size: 15px;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	height: 100%;
+	font-size: 15px;
 }
 
 #dragline {
@@ -109,12 +110,12 @@ a:hover {
 }
 
 .footer-container {
-   margin: 5px auto;
+	margin: 5px auto;
 }
 
 .footer-container > p {
-   font-family: "Roboto", sans-serif;
-   font-size: 15px;
-   padding-top: 8px;
-   padding-left: 10px;
+	padding-top: 8px;
+	padding-left: 10px;
+	font-size: 15px;
+	font-family: 'Roboto', sans-serif;
 }
