@@ -1,13 +1,26 @@
 # FreeBSD online man page editor
-An online man page editor for the FreeBSD man page. Only front-end with HTML, CSS, and JS in this editor. Using [Jroff](https://github.com/Wang-Yan-Hao/jroff) (I fork with extend to support mdoc) to render mdoc.
+An online man page editor for the FreeBSD man page. Only front-end with HTML, CSS, and JS in this editor. Using [Jroff](https://github.com/roperzh/jroff) to render mdoc.
 
-[Online website](https://wang-yan-hao.github.io/man_page_editor/root/)
+[Online website](https://wang-yan-hao.github.io/man_page_editor)
 
-## Directory
-* root: website file.
-* man_page_editor: code to update the map.json in root/other/.
-* root/styles/jroff/: CSS from freebsd-doc [mandoc](https://github.com/freebsd/freebsd-src/blob/main/contrib/mandoc/mandoc.css).
-* root/scripts/jroff.js: main render file.
+## Installation
+node.js >= v16.13.1
+npm >= v8.18.0
+
+```bash 
+$ npm install
+```
+
+Related commands:
+```bash
+$ npm run build # generate production codes
+$ npm run lint # format JS with eslint
+$ npm run format # format files with prettier
+```
+
+## Package
+1. Ace.js@1.11.2: using the Cloudflare CDN to include.
+2. Jsdiff@5.1.0: using the Cloudflare CDN to include.
 
 ## Open in the local server
 There are three ways to open the website on the local server that can help you develop. When you change the code, you can see the change on the local server immediately.
