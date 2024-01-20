@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Jroff 0.0.1 <http://roperzh.github.io/jroff.js>
  * Copyright (c)2015 Roberto Dip <http://roperzh.com>
@@ -16,10 +17,11 @@
     // Browser global scope, assign the module to the global object (root)
     root.Jroff = factory();
   }
-}(this, function () { //eslint-disable-line max-statements, ESLint (JS format checker)
-    "use strict"; // Enables a stricter set of rules for parsing and executing JavaScript code.
+}(this, function () {
+    "use strict";
 
-// Different attribute of each token (Token.kind). There is functions to check the text is what attribute (Token.isMacro(), Token.isComment ...).
+// Different attribute of each token (Token.kind)
+// There exist function to check wheather attribute the text is, like isMacro, isComment function
 var COMMENT = 1,
     MACRO = 2,
     IMACRO = 3, // Inline macro
@@ -29,7 +31,7 @@ var COMMENT = 1,
     ESCAPE = 7;
 
 // Macro list. The macro has a callable function.
-// This is used to check wheather the text is a inline macro (isInlineMacro function). So any inline macro you want to add must be add to this lis.
+// This is used to check wheather the text is a inline macro (isInlineMacro function).
 var callableMacros = [
   'Ac', 'Ao', 'Bc', 'Bo', 'Brc', 'Bro', 'Dc', 'Do', 'Ec', 'Eo', 'Fc',
   'Oc', 'Oo', 'Pc', 'Po', 'Qc', 'Qo', 'Sc', 'So', 'Xc', 'Xo', 'Aq',
@@ -55,7 +57,7 @@ var callableMacros = [
  * @since 0.0.1
  *
  */
-// Use for isMacro function ...
+// Use for isMacro function
 var patterns = {
   // Pattern to match a macro at the beginning of a line
   macro: /^\./,
@@ -624,7 +626,8 @@ Parser.prototype.ignore = function (token) {
   this.lastTok = token;
 };
 
-// Use for Lb macro, from /contrib/mandoc/lib.in file.
+// Lb macro
+// https://github.com/freebsd/freebsd-src/blob/main/contrib/mandoc/lib.in
 var libKey = {
   'lib80211': '802.11 Wireless Network Management Library (lib80211, -l80211)',
   'libalias': 'Packet Aliasing Library (libalias, -lalias)',
@@ -740,7 +743,7 @@ var libKey = {
   'libz': 'Compression Library (libz, -lz)'
 }
 
-// Use for Dt macro
+// Dt macro
 var docSections = {
   1: 'General Commands Manual',
   2: 'System Calls Manual',
@@ -752,21 +755,8 @@ var docSections = {
   8: 'System Manager\'s Manual',
   9: 'Kernel Developer\'s Manual'
 };
-// Use for Dt macro, in freebsd mdoc not use.
-// var volumes = {
-//   'USD': 'User\'s Supplementary Documents',
-//   'PS1': 'Programmer\'s Supplementary Documents',
-//   'AMD': 'Ancestral Manual Documents',
-//   'SMM': 'System Manager\'s Manual',
-//   'URM': 'User\'s Reference Manual',
-//   'PRM': 'Programmer\'s Manual',
-//   'KM': 'Kernel Manual',
-//   'IND': 'Manual Master Index',
-//   'LOCAL': 'Local Manual',
-//   'CON': 'Contributed Software Manual'
-// };
 
-// Use for Dt macro, the list of valid architectures varies by.
+// Dt macro, the list of valid architectures varies by
 var architectures = [
   'alpha', 'acorn26', 'acorn32', 'algor', 'amd64', 'amiga', 'arc', 'arm26',
   'arm32', 'atari', 'bebox', 'cats', 'cesfic', 'cobalt', 'dreamcast',
@@ -777,7 +767,7 @@ var architectures = [
   'shark', 'sparc', 'sparc64', 'sun3', 'tahoe', 'vax', 'x68k', 'x86_64'
 ];
 
-// Use in Bf macro and Ef macro
+// Bf macro and Ef macro
 var fontModes = {
   '-emphasis': 'i',
   '-literal': 'span',
@@ -787,7 +777,7 @@ var fontModes = {
   '<strong></strong>': 'strong' // Sy parameter
 };
 
-// Use in St macro, chage content with FreeBSD style
+// St macro, FreeBSD style
 var abbreviations = {
   '-ansiC': 'ANSI X3.159-1989 (“ANSI C89”)', // C language standards
   '-ansiC-89': 'ANSI X3.159-1989 (“ANSI C89”)',
@@ -837,7 +827,6 @@ var abbreviations = {
   '-ieee1275-94': 'IEEE Std 1275-1994	(“Open Firmware”)'
 };
 
-// All macro
 var specialCharacter = {
   '.': '.',
   ',': ',',
@@ -854,7 +843,7 @@ var specialCharacter = {
   ']': ']',
 }
 
-var in_the_end = {
+var endSpecialCharacter = {
   '.': '.',
   ',': ',',
   '(': '(',
@@ -1514,7 +1503,7 @@ macros.doc = {
       class_result.push(Bd_map[type]);
     } else if (type == '-unfilled' || type == '-literal') { // Special case
       class_result.push(Bd_map[type]);
-      this.buffer.Bd_unfill = true;
+      this.buffer.bdUnfill = true;
     } else { // type not specified, bd is not useful here
       return;
     }
@@ -1543,7 +1532,7 @@ macros.doc = {
     else if (args[1] == '-compact') { // compact
     }
 
-    if (this.buffer.Bd_unfill) { // Special case
+    if (this.buffer.bdUnfill) { // Special case
       return '</p><div class="' + class_result.join(' ') + '">' + '<pre>';
     }
     else {
@@ -1552,8 +1541,8 @@ macros.doc = {
   },
 
   Ed: function () {
-    if (this.buffer.Bd_unfill) {
-      this.buffer.Bd_unfill = false;
+    if (this.buffer.bdUnfill) {
+      this.buffer.bdUnfill = false;
       return '<pre><p class="Pp">';
     } else {
       return '</div><p class="Pp">';
@@ -1562,7 +1551,7 @@ macros.doc = {
 
   D1: function (text) {
     var special = '';
-    while (in_the_end.hasOwnProperty(text[text.length-1])) {
+    while (endSpecialCharacter.hasOwnProperty(text[text.length-1])) {
       special += text[text.length-1];
       text = text.slice(0, -1);
     }
@@ -1573,7 +1562,7 @@ macros.doc = {
 
   Dl: function (text) {
     var special = '';
-    while (in_the_end.hasOwnProperty(text[text.length-1])) {
+    while (endSpecialCharacter.hasOwnProperty(text[text.length-1])) {
       special += text[text.length-1];
       text = text.slice(0, -1);
     }
@@ -1601,13 +1590,13 @@ macros.doc = {
 
     var special = '';
     if (remain_args) {
-      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += remain_args[remain_args.length-1];
         remain_args = remain_args.slice(0, -1);
       }
     }
     else {
-      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += result[result.length-1];
         result = result.slice(0, -1);
       }
@@ -1683,7 +1672,7 @@ macros.doc = {
     }
     if (!Bl_map[type]) // type not specified or not the correct string, Bl is not useful here
       return;
-    this.buffer.Bl_type.push(type);
+    this.buffer.blType.push(type);
 
 
     var type_class = Bl_map[type].split(' ')[1]; // type
@@ -1723,13 +1712,13 @@ macros.doc = {
 
       case '-tag': // Special
         if (width_class || offset_class) { // has indent
-          this.buffer.Bl_tag.push('dl div'); // Use in El macro
+          this.buffer.blTag.push('dl div'); // Use in El macro
           return '</p><div class="' + width_class + ' ' + offset_class + '">'
                   + '<dl class="'  + type_class + ' ' +  compact_class + '">'
                     + '<dd>';
         }
         else {
-          this.buffer.Bl_tag.push('dl');
+          this.buffer.blTag.push('dl');
           return '</p><dl class="'  + type_class + ' ' +  compact_class + '">'
                     + '<dd>';
         }
@@ -1745,18 +1734,18 @@ macros.doc = {
    *
    */
   El: function () {
-    var type = this.buffer.Bl_type[this.buffer.Bl_type.length-1];
+    var type = this.buffer.blType[this.buffer.blType.length-1];
     var result = ''
     if (type == '-bullet' || type == '-dash' || type == '-item')// ul
       result = '</ul>';
     else if (type == '-diag' || type == '-hang' || type == '-inset' || type == '-ohang') // dl
       result = '</dl>';
     else if (type == '-tag') { // dl special
-      if (this.buffer.Bl_tag[this.buffer.Bl_tag.length-1] == 'dl div') {
+      if (this.buffer.blTag[this.buffer.blTag.length-1] == 'dl div') {
         result = '</dl></div>';
         // result = '</dl>'
       }
-      else if (this.buffer.Bl_tag[this.buffer.Bl_tag.length-1] == 'dl') {
+      else if (this.buffer.blTag[this.buffer.blTag.length-1] == 'dl') {
         result = '</dl>';
       }
     }
@@ -1765,8 +1754,8 @@ macros.doc = {
     else if (type == '-enum') // ol
       result = '</ol>';
 
-    this.buffer.Bl_type.pop();
-    this.buffer.Bl_tag.pop();
+    this.buffer.blType.pop();
+    this.buffer.blTag.pop();
     return result;
   },
 
@@ -1787,7 +1776,7 @@ macros.doc = {
    *
    */
   It: function (args) {
-    switch(this.buffer.Bl_type[this.buffer.Bl_type.length-1]) {
+    switch(this.buffer.blType[this.buffer.blType.length-1]) {
       case '': // Not in Bl macro, do nothing
         return '';
 
@@ -1840,7 +1829,7 @@ macros.doc = {
   },
   
   Ta: function () { // Only use in -column
-    if (this.buffer.Bl_type[this.buffer.Bl_type.length-1] == '-column')
+    if (this.buffer.blType[this.buffer.blType.length-1] == '-column')
       return '</td><td>';
     else
       return ''
@@ -2107,7 +2096,7 @@ macros.doc = {
     var tmp = this.splitHTMLString(args);
     args = tmp[0];
     var remain_args = tmp[1];
-    this.buffer.igore_space = true;
+    this.buffer.igoreSpace = true;
 
     if (this.startsWithHTMLTag(remain_args, 'ns') && args[args.length-1] == ' ') // Handle Ns macro
       args = args.slice(0, -1);
@@ -2246,13 +2235,13 @@ macros.doc = {
 
     var special = '';
     if (remain_args) {
-      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += remain_args[remain_args.length-1];
         remain_args = remain_args.slice(0, -1);
       }
     }
     else {
-      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += result[result.length-1];
         result = result.slice(0, -1);
       }
@@ -2391,7 +2380,7 @@ macros.doc = {
   },
 
   Fo: function (name) {
-    this.buffer.InFoMacro = true;
+    this.buffer.foIn = true;
     name = this.parseArguments(name)[0]; // Only care about first parameter
     var result = ''
 
@@ -2416,7 +2405,7 @@ macros.doc = {
    *
    */
   Fc: function () {
-    this.buffer.InFoMacro = false;
+    this.buffer.foIn = false;
     return ');';
   },
 
@@ -2481,7 +2470,7 @@ macros.doc = {
    */
   Fa: function (arg) {
     var result = ''
-    if (this.buffer.InFoMacro) {
+    if (this.buffer.foIn) {
       arg = arg.split('"');
       var flag = true;
       for (var value of arg) {
@@ -2885,13 +2874,13 @@ macros.doc = {
 
     var special = '';
     if (remain_args) {
-      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += remain_args[remain_args.length-1];
         remain_args = remain_args.slice(0, -1);
       }
     }
     else {
-      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += result[result.length-1];
         result = result.slice(0, -1);
       }
@@ -2958,13 +2947,13 @@ macros.doc = {
 
     var special = '';
     if (remain_args) {
-      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += remain_args[remain_args.length-1];
         remain_args = remain_args.slice(0, -1);
       }
     }
     else {
-      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += result[result.length-1];
         result = result.slice(0, -1);
       }
@@ -2972,7 +2961,7 @@ macros.doc = {
 
     return '‘' + result + remain_args + '’' + special;
     // var speical = ''
-    // if (in_the_end.hasOwnProperty(args[args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+    // if (endSpecialCharacter.hasOwnProperty(args[args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
     //   speical += args[args.length-1];
     //   args = args.slice(0, -1);
     // }
@@ -3037,13 +3026,13 @@ macros.doc = {
 
     var special = '';
     if (remain_args) {
-      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += remain_args[remain_args.length-1];
         remain_args = remain_args.slice(0, -1);
       }
     }
     else {
-      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += result[result.length-1];
         result = result.slice(0, -1);
       }
@@ -3056,7 +3045,7 @@ macros.doc = {
     // var remain_args = tmp[1];
 
     // var speical = ''
-    // if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before ')' should not be special text. Ex: .Pq Sq Pa \&. .
+    // if (endSpecialCharacter.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before ')' should not be special text. Ex: .Pq Sq Pa \&. .
     //   speical += remain_args[remain_args.length-1];
     //   remain_args = remain_args.slice(0, -1);
     // }
@@ -3128,13 +3117,13 @@ macros.doc = {
 
     var special = '';
     if (remain_args) {
-      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += remain_args[remain_args.length-1];
         remain_args = remain_args.slice(0, -1);
       }
     }
     else {
-      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += result[result.length-1];
         result = result.slice(0, -1);
       }
@@ -3205,13 +3194,13 @@ macros.doc = {
 
     var special = '';
     if (remain_args) {
-      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += remain_args[remain_args.length-1];
         remain_args = remain_args.slice(0, -1);
       }
     }
     else {
-      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += result[result.length-1];
         result = result.slice(0, -1);
       }
@@ -3276,13 +3265,13 @@ macros.doc = {
 
     var special = '';
     if (remain_args) {
-      if (in_the_end.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(remain_args[remain_args.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += remain_args[remain_args.length-1];
         remain_args = remain_args.slice(0, -1);
       }
     }
     else {
-      if (in_the_end.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
+      if (endSpecialCharacter.hasOwnProperty(result[result.length-1])) { // the text before '’' should not be special text. Ex: .Pq Sq Pa \&. .
         special += result[result.length-1];
         result = result.slice(0, -1);
       }
@@ -3588,9 +3577,9 @@ macros.doc = {
   // },
 
   'br': function () {
-    if (this.buffer.Bd_unfill)
+    if (this.buffer.bdUnfill)
       return '&#10;';
-    else if (this.buffer.Bl_type[this.buffer.Bl_type.length-1] == '-bullet' || this.buffer.Bl_type[this.buffer.Bl_type.length-1] == '-enum')
+    else if (this.buffer.blType[this.buffer.blType.length-1] == '-bullet' || this.buffer.blType[this.buffer.blType.length-1] == '-enum')
       return '<br>';
     else
       return '</p><p class="Pp">';
@@ -3730,7 +3719,9 @@ macros.doc = {
 };
 var HTMLGenerator = function () {};
 
-HTMLGenerator.prototype.generate = function (source, lib) { // lib parameter is not use now, this is use when you have different macros, but in this we only have one macro
+// The 'lib' parameter is currently not in use
+// It is intended for scenarios with multiple macros, but in this case, we only have one macro in use
+HTMLGenerator.prototype.generate = function (source, lib) {
   var parser,
     ast;
 
@@ -3740,91 +3731,80 @@ HTMLGenerator.prototype.generate = function (source, lib) { // lib parameter is 
 
   parser = new Parser(source);
   ast = parser.buildAST();
-  // lib = lib || 'doc';
-  lib = 'doc'; // Only set to 'doc' macro, this is also our only macro (FreeBSD mdoc)
-  // console.log(ast)
+  lib = 'doc'; // Only one macro (FreeBSD mdoc)
   this.macros = mergeObjects([macros.defaults, macros[lib]]);
 
-  /* Global variable, used to define if a token is imacro */
-  // macroLib = lib;
-  macroLib = 'doc';  // Only set to doc macro, this is also our only macro
+  macroLib = 'doc';
 
-  // Buffer to store the message while parsing
+  // Buffer to store the info while parsing
   this.buffer = {
-    date: '', // Use for Dd macro
-    os: '', // Use for Os macro
-    title: '', // Use for Dt macro
-    section: '', // Use for Dt macro
-    volume: '', // Use for Dt macro
-    sideText: '', // Use for Dt macro
-    midText: '', // Use for Dt macro
-    style: { // All macro
+    date: '', // Dd macro
+    os: '', // Os macro
+    title: '', // Dt macro
+    section: '', // Dt macro
+    volume: '', // Dt macro
+    sideText: '', // Dt macro
+    midText: '', // Dt macro
+    style: {
       indent: 8, // Default set the tab sapce, ex the text below .Sh macro. The unit is %
       fontSize: 16 // Defaul set the font size
     },
-    section: '', // Use for Sh macro
-    subSection: '', // Use for Ss macro
-    openTags: [], // Use for any macro
-    display: [], // Use for Bd, Ed macro
-    lists: [], // Use for Bl, El macro
+    section: '', // Sh macro
+    subSection: '', // Ss macro
+    openTags: [],
+    display: [], // Bd, Ed macro
+    lists: [], // Bl, El macro
     references: {}, // Rs macro
     fontModes: [],
     sectionTags: [],
-    activeFontModes: [], // Use fo Bf Ef macro
-    InFoMacro: false, // Use for Fo Fc macro
-    Bd_unfill: false, // Use for Bd macro
-    Bl_type: [],
-    Bl_tag: [],
+    activeFontModes: [], // Bf, Ef macro
+    foIn: false, // Fo, Fc macro
+    bdUnfill: false, // Bd macro
+    blType: [],
+    blTag: [],
     firstMacroSh: true,
-    igore_space: false,
+    igoreSpace: false,
     meetEscape: false,
     firstMeetNm: true,
     name: '',
   };
 
-  var ast_recurese = this.recurse(ast, 0);
-  ast_recurese += this.closeAllTags(this.buffer.openTags); // Complete the ta
+  var astRecurese = this.recurse(ast, 0);
+  astRecurese += this.closeAllTags(this.buffer.openTags); // Complete the ta
 
-  var begin = '<meta charset="utf-8"> \
-               <meta name="viewport" content="width=device-width, initial-scale=1.0">'
-  
-  var top_1 = '<table class="head"> \
+  const begin = '<meta charset="utf-8"> \
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">' 
+  const top1 = '<table class="head"> \
                   <tbody> \
                     <tr> \
                       <td class="head-ltitle">'
-  var top_2 = '</td><td class="head-vol">'
-  var top_3 = '</td><td class="head-rtitle">'
-  var top_4 = '</td> \
-                      </tr> \
-                    </tbody> \
-                  </table>'
-  var top = top_1 + this.buffer.sideText 
-          + top_2 + this.buffer.midText 
-          + top_3 + this.buffer.sideText
-          + top_4;
-
-  var content_1 = '<div class="manual-text">' 
-  var content_2 = '</div>'
-  var content = content_1 + ast_recurese
-              + content_2;
-  
-  var end_1 = '<table class="foot"> \
+  const top2 = '</td><td class="head-vol">'
+  const top3 = '</td><td class="head-rtitle">'
+  const top4 = '</td> \
+                    </tr> \
+                  </tbody> \
+                </table>'
+  const top = top1 + this.buffer.sideText
+            + top2 + this.buffer.midText
+            + top3 + this.buffer.sideText
+            + top4;
+  const content1 = '<div class="manual-text">' 
+  const content2 = '</div>'
+  const content = content1 + astRecurese + content2;
+  const end1 = '<table class="foot"> \
                 <tbody> \
                   <tr> \
                     <td class="foot-date">'
-  var end_2 = '</td> <td class="foot-os">'
-  var end_3 = '</td> \
+  const end2 = '</td> <td class="foot-os">'
+  const end3 = '</td> \
                 </tr> \
                 </tbody> \
               </table>'
-  var end = end_1 + this.buffer.date 
-          + end_2 + this.buffer.os
-          + end_3;
+  const end = end1 + this.buffer.date 
+            + end2 + this.buffer.os
+            + end3;
     
-            
-  // Post process
-
-  // 2. Remove the space of Do, Dc, Qo, Qc, So, Sc, Po, Pc
+  // 2. Remove the space of Do, Dc, Qo, Qc, So, Sc, Po, Pc. Todo:
   return begin + top + content + end;
 };
 
@@ -3839,27 +3819,26 @@ HTMLGenerator.prototype.generate = function (source, lib) { // lib parameter is 
  */
 HTMLGenerator.prototype.recurse = function (arr, layer) {
   return arr.reduce((result, node) => this.reduceRecursive(result, node, layer), '');
-  // return arr.reduce(this.reduceRecursive.bind(this), '', 'layer');
 };
 
 /**
  * Meant to be used as an auxiliar function for the reduce call
  * in 'this.recurse'
  *
- * @param {string} result
+ * @param {string} result Current parsing result
  *
- * @param {token} node
+ * @param {token} node Current node
  *
  * @since 0.0.1
  *
  */
-HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) { // result is current local parsing result, node is current node
+HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) {
   var func,
     args;
 
-  if(canHaveNodes(node)) { // Only escape, inline macro and macro can have node
+  // This condition is true only for escape, inline macro, and macro, as they are the only scenarios where nodes are allowed
+  if(canHaveNodes(node)) {
     if(node.value === 'Sh' || node.value === 'SH') {
-      // result += this.closeAllTags(this.buffer.fontModes);
       this.buffer.firstMacroSh = true;
       result += this.closeAllTags(this.buffer.openTags);
     }
@@ -3867,17 +3846,13 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) { // re
       this.buffer.firstMacroSh = false;
     }
 
+    if (node.kind == ESCAPE) {
+      args = node.nodes.length ? this.recurse(node.nodes, layer+1) : ''; // Get argument begind the macro
 
-    if (node.kind == 7) { // Escape character
-     
-      args = node.nodes.length ? this.recurse(node.nodes, layer+1) : ''; // Get argument begind the macro now
       if (node.value == '\\&') {
-        this.buffer.meetEscape = true;
-        result = result.slice(0, -1); // The \\& will generate a space sholud be ignore in the before string
-        //result += '\\&';
-        result += '';
+        this.buffer.meetEscape = true; // The '\\&' will generate a space sholud be ignore in the before string
+        result = result.slice(0, -1);
       } else if (node.value == '\\-') {
-        //result += '\\&';
         result += '-';
       } else if  (node.value == '\\e') {
         result += '\\ ';
@@ -3889,21 +3864,19 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) { // re
       else {
         result += node.value.substring(1);
       }
-      
     }
-    else if (node.kind == 3 && layer == 0){ // Text was treat as a inline macro, not possible a inline macro with layer 0
-      args = node.nodes.length ? this.recurse(node.nodes, layer+1) : ''; // Get argument begind the macro now
+    else if (node.kind == IMACRO && layer == 0){ // It's not possible for an inline macro to have layer 0
+      args = node.nodes.length ? this.recurse(node.nodes, layer+1) : ''; // Get argument begind the macro
       result = result + ' ' + node.value + ' ' + args;
     }
-    else { // Common Macro
+    else { // Macro
       func = this.macros[node.value] || this.undefMacro; // Get the macro parsing 
-      args = node.nodes.length ? this.recurse(node.nodes, layer+1) : ''; // Get argument begind the macro now
-      // console.log('Macro:', node.value, 'Args:', args);
+      args = node.nodes.length ? this.recurse(node.nodes, layer+1) : ''; // Get argument begind the macro
       result += func.call(this, args, node) || '';
     }
   } else { // Text
     // Handle Escape character \&text
-    if (node.kind == 5 && this.buffer.meetEscape && layer != 0) {
+    if (node.kind == TEXT && this.buffer.meetEscape && layer != 0) {
       node.value = 'Actual_a_' + node.value;
     }
     this.buffer.meetEscape = false;
@@ -3914,12 +3887,11 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) { // re
       node.valu = node.value.slice(0, -2) + ' Actual_a_ '; // Can't use &nbsp; why? example: .Pq Dq Li " ' "
     
     // Handle Bd macro
-    if (this.buffer.Bd_unfill && node.value == ' ')
+    if (this.buffer.bdUnfill && node.value == ' ')
       result += '&#10;';
 
-    result += node.value; // If not macro, clean the " character, not use now
+    result += node.value;
   }
-  // console.log('Result: ',result)
   return result;
 };
 

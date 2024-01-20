@@ -1,4 +1,4 @@
-import { HTMLGenerator } from './jroff.js'
+import { HTMLGenerator } from '../render/jroff.js'
 
 // Global constants
 const editor = ace.edit('editor') /* global ace */
