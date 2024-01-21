@@ -2590,7 +2590,7 @@ macros.doc = {
    * @since 0.0.1
    *
    */
-  An: function (author) {
+  An: function (args) {
     var tmp = this.splitHTMLString(args);
     args = tmp[0];
     args = this.parseArguments(args);
