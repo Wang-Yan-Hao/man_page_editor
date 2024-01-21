@@ -1322,13 +1322,13 @@ macros.doc = {
       this.buffer.firstMeetNm = false
     }
     // The Nm macro uses Block full-implicit se-mantics
-    // when invoked as the first macro on  an
+    // when invoked as the first macro on an
     // input line in the SYNOPSIS section;
-    if (this.buffer.firstMacroSh && this.isInsideOfSection('SYNOPSIS')) { // Inside the SYNOPSIS section and the first macro in Sh.
-      this.buffer.firstMacroSh = false;
+    if (this.isInsideOfSection('SYNOPSIS')){ // Inside the SYNOPSIS section and the first macro in Sh.
+      // this.buffer.meetSh = false;
       this.buffer.openTags.push('td', 'tr', 'tbody', 'table');
 
-      return '<table class="Nm">' +
+      return '</tbody></td></td><table class="Nm">' +
               '<tbody>' +
                 '<tr>' +
                   '<td><code class="Nm">' + this.buffer.name + '</code></td>' +
@@ -1484,7 +1484,7 @@ macros.doc = {
     args = this.parseArguments(args);
     var type = args[0];
 
-    var Bd_map = {
+    var bdMap = {
       '-centered': 'Bd Pp',
       '-filled': 'Bd Pp', // Special case
       '-literal': 'Bd Pp Li',
@@ -1500,9 +1500,9 @@ macros.doc = {
     
     // type argument
     if (type == '-centered' || type == '-filled' || type == '-ragged'){
-      class_result.push(Bd_map[type]);
+      class_result.push(bdMap[type]);
     } else if (type == '-unfilled' || type == '-literal') { // Special case
-      class_result.push(Bd_map[type]);
+      class_result.push(bdMap[type]);
       this.buffer.bdUnfill = true;
     } else { // type not specified, bd is not useful here
       return;
@@ -1512,7 +1512,7 @@ macros.doc = {
     if (args[1] == '-offset' && args[3] == '-compact') { // -offset width -compact
       var width = args[2] || ''
       if (width == 'indent' || width == 'indent-two' || width == 'left' || width == 'right' || width == 'center') {
-        class_result.push(Bd_map[width]);
+        class_result.push(bdMap[width]);
       }
       else if (width != '') {
         class_result.push('Bd-indent'); // Any string is Bd-indent
@@ -1523,7 +1523,7 @@ macros.doc = {
     else if (args[1] == '-offset') { // -offset width or -offset
       var width = args[2] || ''
       if (width == 'indent' || width == 'indent-two' || width == 'left' || width == 'right' || width == 'center') {
-        class_result.push(Bd_map[width]);
+        class_result.push(bdMap[width]);
       }
       else if (width != '') {
         class_result.push('Bd-indent'); // Any string is Bd-indent
@@ -3751,7 +3751,7 @@ HTMLGenerator.prototype.generate = function (source, lib) {
     },
     section: '', // Sh macro
     subSection: '', // Ss macro
-    openTags: [],
+    openTags: [], // Store the open tag now, will be complete later
     display: [], // Bd, Ed macro
     lists: [], // Bl, El macro
     references: {}, // Rs macro
@@ -3759,12 +3759,12 @@ HTMLGenerator.prototype.generate = function (source, lib) {
     sectionTags: [],
     activeFontModes: [], // Bf, Ef macro
     foIn: false, // Fo, Fc macro
-    bdUnfill: false, // Bd macro
+    bdUnfill: false, // Inside of Bd list with unfill attribut
     blType: [],
     blTag: [],
-    firstMacroSh: true,
+    meetSh: true, // Meet Sh macro or not
     igoreSpace: false,
-    meetEscape: false,
+    meetAndEscape: false, // Meet "\\$" escape, with special escape handling
     firstMeetNm: true,
     name: '',
   };
@@ -3829,6 +3829,7 @@ HTMLGenerator.prototype.recurse = function (arr, layer) {
  *
  * @param {token} node Current node
  *
+ * @param {layer} int The order of word in current sentence
  * @since 0.0.1
  *
  */
@@ -3839,18 +3840,15 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) {
   // This condition is true only for escape, inline macro, and macro, as they are the only scenarios where nodes are allowed
   if(canHaveNodes(node)) {
     if(node.value === 'Sh' || node.value === 'SH') {
-      this.buffer.firstMacroSh = true;
+      this.buffer.meetSh = true;
       result += this.closeAllTags(this.buffer.openTags);
-    }
-    else {
-      this.buffer.firstMacroSh = false;
     }
 
     if (node.kind == ESCAPE) {
       args = node.nodes.length ? this.recurse(node.nodes, layer+1) : ''; // Get argument begind the macro
 
       if (node.value == '\\&') {
-        this.buffer.meetEscape = true; // The '\\&' will generate a space sholud be ignore in the before string
+        this.buffer.meetAndEscape = true; // The '\\&' will generate a space sholud be ignore in the before string
         result = result.slice(0, -1);
       } else if (node.value == '\\-') {
         result += '-';
@@ -3870,21 +3868,24 @@ HTMLGenerator.prototype.reduceRecursive = function (result, node, layer) {
       result = result + ' ' + node.value + ' ' + args;
     }
     else { // Macro
-      func = this.macros[node.value] || this.undefMacro; // Get the macro parsing 
-      args = node.nodes.length ? this.recurse(node.nodes, layer+1) : ''; // Get argument begind the macro
+      func = this.macros[node.value] || this.undefMacro; // Get the macro parsing function
+      args = node.nodes.length ? this.recurse(node.nodes, layer+1) : '';
       result += func.call(this, args, node) || '';
     }
   } else { // Text
-    // Handle Escape character \&text
-    if (node.kind == TEXT && this.buffer.meetEscape && layer != 0) {
+    // Special hadnling for "\\&" escape
+    if (node.kind == TEXT && this.buffer.meetAndEscape && layer != 0) {
       node.value = 'Actual_a_' + node.value;
     }
-    this.buffer.meetEscape = false;
+
+    this.buffer.meetAndEscape = false;
     node.value = node.value.replace('\" \"', 'Actual_a_&nbsp');
+
     if(node.value.startsWith('" '))
       node.value = 'Actual_a_ ' + node.value.substring(2);
+    
     if(node.value.endsWith(' "'))
-      node.valu = node.value.slice(0, -2) + ' Actual_a_ '; // Can't use &nbsp; why? example: .Pq Dq Li " ' "
+      node.value = node.value.slice(0, -2) + ' Actual_a_ '; // Can't use &nbsp; why? example: .Pq Dq Li " ' "
     
     // Handle Bd macro
     if (this.buffer.bdUnfill && node.value == ' ')
