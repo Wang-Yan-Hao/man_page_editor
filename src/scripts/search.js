@@ -17,7 +17,7 @@ fetch('config.json')
 // Get the "man_page_map.json" as variable, it is a map of (man page file name, path of man page file name)
 let jsonMap = ''
 
-fetch('other/man_page_map.json')
+fetch('man_page_map.json')
 	.then((response) => {
 		if (!response.ok) {
 			throw new Error(`Error occurred. Status:${response.status}`)
@@ -26,6 +26,7 @@ fetch('other/man_page_map.json')
 	})
 	.then((data) => {
 		jsonMap = data
+		searchContent() // Init contents in editor
 	})
 	.catch((error) => console.error(error))
 

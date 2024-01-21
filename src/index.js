@@ -53,3 +53,7 @@ observer.observe(document.getElementById('editor'), {
 	childList: true,
 	subtree: true,
 })
+
+// Initail contents in editor
+const inputElement = document.getElementById('input');
+inputElement.value = 'ls'

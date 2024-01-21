@@ -33,7 +33,7 @@ module.exports = {
 				{ from: 'public/styles', to: 'styles' },
 				{ from: 'public/config.json', to: 'config.json' },
 				{ from: 'public/favicon.ico', to: 'favicon.ico' },
-				{ from: 'public/other', to: 'other' },
+				{ from: 'public/other/man_page_map.json', to: 'man_page_map.json' },
 			],
 		}),
 	],
