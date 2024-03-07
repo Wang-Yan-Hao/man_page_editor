@@ -55,5 +55,5 @@ observer.observe(document.getElementById('editor'), {
 })
 
 // Initail contents in editor
-const inputElement = document.getElementById('input');
+const inputElement = document.getElementById('input')
 inputElement.value = 'ls'

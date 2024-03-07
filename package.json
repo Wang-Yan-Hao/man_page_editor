@@ -5,10 +5,10 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"build": "webpack --config webpack.config.js",
-		"lint": "eslint 'src/**/*.js' --ignore-pattern 'src/scripts/jroff.js'",
-		"lint-fix": "eslint -- fix 'src/**/*.js' --ignore-pattern 'src/scripts/jroff.js'",
-		"format": "prettier --write 'public/**/*.css' '!public/styles/jroff/*.css' 'public/**/*.html'",
-		"check-format": "prettier --check 'public/**/*.css' '!public/styles/jroff/*.css' 'public/**/*.html'"
+		"eslint": "eslint 'src/**/*.js' --ignore-pattern 'src/scripts/jroff.js'",
+		"eslint-fix": "eslint --fix 'src/**/*.js' --ignore-pattern 'src/scripts/jroff.js'",
+		"prettier": "prettier --check 'public/**/*.css' '!public/styles/jroff/*.css' 'public/**/*.html'",
+		"prettier-fix": "prettier --write 'public/**/*.css' '!public/styles/jroff/*.css' 'public/**/*.html'"
 	},
 	"author": "",
 	"license": "ISC",
