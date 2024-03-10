@@ -4173,34 +4173,41 @@ var jroff = __webpack_require__(435);
 // Global constants
 const editor = ace.edit('editor') /* global ace */
 editor.setOption('wrap', 'free') // Long lines will automatically wrap to the next line
+editor.setOption('showPrintMargin', false)
 editor.session.setMode('ace/mode/text')
 
 const outputSession = document.querySelector('#output')
-
-// // Initail contents in editor
-// fetch('other/init.txt')
-// 	.then((response) => response.text())
-// 	.then((data) => {
-// 		editor.setValue(data)
-// 		window.origin_content = data
-// 		window.current_link_1 = 'a/usr/src/bin/ls/ls.1'
-// 		window.current_link_2 = 'b/usr/src/bin/ls/ls.1'
-// 		generateContent()
-// 	})
-// 	.catch((error) => {
-// 		console.error('Error fetching config.json:', error)
-// 	})
 
 // Generated content by using Jroff
 function generateContent() {
 	const editorContent = editor.getValue() // Editor content
 	const generator = new jroff.HTMLGenerator()
 	const result = generator.generate(editorContent, 'doc')
-	outputSession.contentDocument.body.innerHTML =
-		'<link rel="stylesheet" href="styles/jroff/mandoc.css">' +
-		'<link rel="stylesheet" href="styles/jroff/fix.css">' +
-		result
+	outputSession.contentDocument.body.innerHTML = result
+
+	// Define an array of CSS file paths
+	const cssFiles = ['styles/jroff/mandoc.css', 'styles/jroff/fix.css']
+
+	// Loop through the array and create <link> elements for each CSS file
+	cssFiles.forEach(function (cssFile) {
+		const link = document.createElement('link')
+		link.href = cssFile
+		link.rel = 'stylesheet'
+
+		outputSession.contentDocument.head.appendChild(link)
+	})
 }
+
+let typingTimer // Timer identifier
+const typingInterval = 500 // Time in milliseconds (1 second)
+
+editor.getSession().on('change', function () {
+	clearTimeout(typingTimer)
+	typingTimer = setTimeout(() => {
+		// Trigger your function here
+		generateContent()
+	}, typingInterval)
+})
 
 ;// CONCATENATED MODULE: ./src/scripts/utility.js
 // Helper function to decode base64-encoded Unicode strings
@@ -4361,25 +4368,6 @@ window.addEventListener('beforeunload', function (e) {
 	// Some browsers require the confirmation message to be set
 	e.returnValue = confirmationMessage
 	return confirmationMessage
-})
-
-// While edit content after 1 second right sesstion will rerender. To prevent too many function calls
-let debounceTimeoutId = null
-
-const observer = new MutationObserver(function (mutationsList, observer) {
-	// Use debounce technique to ensure the function will be called at most once in one second
-	if (debounceTimeoutId) {
-		clearTimeout(debounceTimeoutId)
-	}
-	debounceTimeoutId = setTimeout(() => {
-		// Trigger your function here
-		generateContent()
-	}, 1000)
-})
-
-observer.observe(document.getElementById('editor'), {
-	childList: true,
-	subtree: true,
 })
 
 // Initail contents in editor
