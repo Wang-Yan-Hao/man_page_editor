@@ -12,10 +12,19 @@ export function generateContent() {
 	const editorContent = editor.getValue() // Editor content
 	const generator = new HTMLGenerator()
 	const result = generator.generate(editorContent, 'doc')
-	outputSession.contentDocument.body.innerHTML =
-		'<link rel="stylesheet" href="styles/jroff/mandoc.css">' +
-		'<link rel="stylesheet" href="styles/jroff/fix.css">' +
-		result
+	outputSession.contentDocument.body.innerHTML = result
+
+	// Define an array of CSS file paths
+	const cssFiles = ['styles/jroff/mandoc.css', 'styles/jroff/fix.css']
+
+	// Loop through the array and create <link> elements for each CSS file
+	cssFiles.forEach(function (cssFile) {
+		const link = document.createElement('link')
+		link.href = cssFile
+		link.rel = 'stylesheet'
+
+		outputSession.contentDocument.head.appendChild(link)
+	})
 }
 
 let typingTimer // Timer identifier
