@@ -3,6 +3,14 @@ import { startDrag, drag, stopDrag } from './scripts/middle_line.js'
 import { generateContent } from './scripts/editor.js'
 import { searchContent } from './scripts/search.js'
 import { helpToggleDropdown } from './scripts/dropdown_menu.js'
+import {
+	openSettingModal,
+	closeSetting,
+	themeSelect,
+	editorFontSizeSelect,
+	outputFontSizeSelect,
+	editorInputSelect,
+} from './scripts/setting.js'
 
 // Add attribute to html
 const dragLine = document.getElementById('dragline')
@@ -19,13 +27,35 @@ storeContentTag.addEventListener('click', storeContent)
 const patchDownloadTag = document.getElementById('download-patch')
 patchDownloadTag.addEventListener('click', patchDownload)
 
+const settingTag = document.getElementById('setting')
+settingTag.addEventListener('click', openSettingModal)
+
+const cloaseSettingTag = document.getElementById('close-setting')
+cloaseSettingTag.addEventListener('click', closeSetting)
+
+const themeSelectTag = document.getElementById('theme-select')
+themeSelectTag.addEventListener('change', themeSelect)
+
+const editorFontSizeSelectTag = document.getElementById(
+	'editor-font-size-select'
+)
+editorFontSizeSelectTag.addEventListener('change', editorFontSizeSelect)
+
+const outputFontSizeSelectTag = document.getElementById(
+	'output-font-size-select'
+)
+outputFontSizeSelectTag.addEventListener('change', outputFontSizeSelect)
+
+const editorInputSelectTag = document.getElementById('editor-input-select')
+editorInputSelectTag.addEventListener('change', editorInputSelect)
+
+const helpDropdownTag = document.getElementById('help-dropdown')
+helpDropdownTag.addEventListener('click', helpToggleDropdown)
+
 const freebsdBugzillaTag = document.getElementById('freebsd-bugzilla')
 freebsdBugzillaTag.addEventListener('click', function () {
 	window.open('https://bugs.freebsd.org/bugzilla/', '_blank')
 })
-
-const helpDropdown = document.getElementById('help-dropdown')
-helpDropdown.addEventListener('click', helpToggleDropdown)
 
 const searchTag = document.getElementById('search')
 searchTag.addEventListener('click', searchContent)

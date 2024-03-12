@@ -26,15 +26,18 @@ export function generateContent() {
 
 		outputSession.contentDocument.head.appendChild(link)
 	})
+
+	const styleElement = document.createElement('style')
+	styleElement.textContent = window.outputFontSize || ''
+	outputSession.contentDocument.head.appendChild(styleElement)
 }
 
 let typingTimer // Timer identifier
-const typingInterval = 500 // Time in milliseconds (1 second)
+const typingInterval = 500 // Time in milliseconds
 
 editor.getSession().on('change', function () {
 	clearTimeout(typingTimer)
 	typingTimer = setTimeout(() => {
-		// Trigger your function here
 		generateContent()
 	}, typingInterval)
 })
