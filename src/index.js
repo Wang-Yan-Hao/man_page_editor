@@ -2,6 +2,7 @@ import { patchDownload, storeContent } from './scripts/download.js'
 import { startDrag, drag, stopDrag } from './scripts/middle_line.js'
 import { generateContent } from './scripts/editor.js'
 import { searchContent } from './scripts/search.js'
+import { helpToggleDropdown } from './scripts/dropdown_menu.js'
 
 // Add attribute to html
 const dragLine = document.getElementById('dragline')
@@ -22,6 +23,9 @@ const freebsdBugzillaTag = document.getElementById('freebsd-bugzilla')
 freebsdBugzillaTag.addEventListener('click', function () {
 	window.open('https://bugs.freebsd.org/bugzilla/', '_blank')
 })
+
+const helpDropdown = document.getElementById('help-dropdown')
+helpDropdown.addEventListener('click', helpToggleDropdown)
 
 const searchTag = document.getElementById('search')
 searchTag.addEventListener('click', searchContent)
