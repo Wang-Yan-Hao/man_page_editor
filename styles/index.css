@@ -15,6 +15,7 @@ a:hover {
 	align-items: center;
 	background-color: rgb(64, 62, 62);
 	padding-left: 12px;
+	height: 44px;
 }
 
 .header-container > a,
@@ -82,7 +83,7 @@ a:hover {
 	position: relative;
 	flex-direction: row;
 	margin: auto;
-	height: calc(100% - 47px); /* Adjusted height calculation */
+	height: calc(100% - 48px); /* Adjusted height calculation */
 }
 
 #editor-container-left,
